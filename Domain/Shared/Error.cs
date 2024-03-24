@@ -1,6 +1,15 @@
 namespace Domain.Shared;
 
-public sealed record Error(string Code, string Description)
+public class Error
 {
-    public static readonly Error None = new(string.Empty, string.Empty);
+    public string Code { get; }
+    public string Description { get; }
+
+    public Error(string code, string description)
+    {
+        Code = code;
+        Description = description;
+    }
+
+    public static Error None => new Error(string.Empty, string.Empty);
 }

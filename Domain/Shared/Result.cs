@@ -1,16 +1,10 @@
 namespace Domain.Shared;
-public class Result<TValue, TError> 
+public class Result
 {
-    protected internal Result(TValue? value)
-    {
-        IsSuccess = true;
-        Value = value;
-    }
-
-    protected internal Result(TError error)
+    protected Result(Error error)
     {
 
-        IsSuccess = false;
+        IsSuccess = error == Error.None;
         Error = error;
     }
     
@@ -18,11 +12,10 @@ public class Result<TValue, TError>
 
     public bool IsFailure => !IsSuccess;
     
-    public readonly TValue? Value;
-    public readonly TError? Error;
+    public readonly Error Error;
     
-    public static Result<TValue,TError> Success(TValue? value) => new(value);
+    public static Result Success() => new(Error.None);
 
-    public static Result<TValue,TError> Failure(TError error) => new(error);
+    public static Result Failure(Error error) => new(error);
 
 }
