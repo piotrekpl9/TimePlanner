@@ -16,7 +16,7 @@ public sealed class User : Entity
     public DateTime? UpdatedAt { get; private set; }
     public DateTime? DeletedAt { get; private set; }
     
-    public User(
+    private User(
         Guid id, 
         string name,
         string surname,
@@ -61,7 +61,7 @@ public sealed class User : Entity
     {
         if (DeletedAt.HasValue)
         {
-            return Result.Failure(UserErrors.UserAlreadyDeleted);
+            return Result.Failure(UserError.UserAlreadyDeleted);
         }
         
         DeletedAt = DateTime.UtcNow;

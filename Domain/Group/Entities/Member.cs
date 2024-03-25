@@ -4,7 +4,9 @@ namespace Domain.Group.Entities;
 
 public class Member : Entity
 {
-    public Member(Guid id) : base(id)
+    private Member(Guid id) : base(id)
     {
     }
+
+    public Guid UserId { get; set; }
 }
