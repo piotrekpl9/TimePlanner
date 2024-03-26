@@ -8,9 +8,9 @@ using Domain.User.Entities;
 
 public sealed class Group : AggregateRoot
 {
-    private List<Task> _tasks;
-    private List<Invitation> _invitations;
-    private List<Member> _members;
+    private readonly List<Task> _tasks;
+    private readonly List<Invitation> _invitations;
+    private readonly List<Member> _members;
     public IReadOnlyCollection<Task> Tasks => _tasks.AsReadOnly();
     public IReadOnlyCollection<Invitation> Invitations => _invitations.AsReadOnly();
     public IReadOnlyCollection<Member> Members => _members.AsReadOnly();
@@ -32,9 +32,10 @@ public sealed class Group : AggregateRoot
         _members = members;
     }
 
-    public static Group Create(Guid id,string name, Member creator)
+    public static Group Create(Guid id,string name, Guid userId)
     {
-        return new Group(new Guid(),creator,name,new List<Task>(),new List<Invitation>(), new List<Member>(), DateTime.UtcNow, null, null);
+        var creator = Member.CreateOwner(userId);
+        return new Group(new Guid(), creator, name, [], [], [creator], DateTime.UtcNow, null, null);
     }
     
     public Result<Invitation> SendInvitation(User user, Member sender)
@@ -54,5 +55,37 @@ public sealed class Group : AggregateRoot
         _invitations.Add(invitation);
 
         return Result<Invitation>.Success(invitation);
+    }
+    
+    public Result<Member> AcceptInvitation(Invitation invitation)
+    {
+        var memberResult = invitation.Accept();
+        if (memberResult is { IsSuccess: true, Value: not null })
+        {
+            _members.Add(memberResult.Value);
+            return Result<Member>.Success(memberResult.Value);
+        }
+
+        return Result<Member>.Failure(memberResult.Error);
+    }
+    
+    public Result RejectInvitation(Invitation invitation)
+    {
+        var result = invitation.Reject();
+        if (result.IsSuccess)
+        {
+            return Result.Success();
+        }
+        return Result.Failure(result.Error);
+    }
+
+    public Result Delete()
+    {
+        if (DeletedAt is not null)
+        {
+            return Result.Failure(GroupError.GroupAlreadyDeleted);
+        }
+        DeletedAt = DateTime.UtcNow;
+        return Result.Success();
     }
 }
