@@ -1,17 +1,17 @@
 using Domain.Group.Errors;
 using Domain.Group.Models.Enums;
+using Domain.Group.Models.ValueObjects;
 using Domain.Primitives;
 using Domain.Shared;
+using Domain.User.ValueObjects;
 
 namespace Domain.Group.Entities;
 using Domain.User.Entities;
 
-public sealed class Group : AggregateRoot
+public sealed class Group : AggregateRoot<GroupId>
 {
-    private readonly List<Task> _tasks;
     private readonly List<Invitation> _invitations;
     private readonly List<Member> _members;
-    public IReadOnlyCollection<Task> Tasks => _tasks.AsReadOnly();
     public IReadOnlyCollection<Invitation> Invitations => _invitations.AsReadOnly();
     public IReadOnlyCollection<Member> Members => _members.AsReadOnly();
     public string Name { get; set; }
@@ -20,37 +20,36 @@ public sealed class Group : AggregateRoot
     public DateTime? DeletedAt { get; private set; }
     public Member Creator { get; set; }
     
-    private Group(Guid id, Member creator,string name, List<Task> tasks, List<Invitation> invitations, List<Member> members, DateTime createdAt,DateTime? updatedAt,DateTime? deletedAt) : base(id)
+    private Group(GroupId id, Member creator,string name,  List<Invitation> invitations, List<Member> members, DateTime createdAt,DateTime? updatedAt,DateTime? deletedAt) : base(id)
     {
         Name = name;
         CreatedAt = createdAt;
         UpdatedAt = updatedAt;
         DeletedAt = deletedAt;
         Creator = creator;
-        _tasks = tasks;
         _invitations = invitations;
         _members = members;
     }
 
-    public static Group Create(Guid id,string name, Guid userId)
+    public static Group Create(Guid id,string name, UserId userId)
     {
         var creator = Member.CreateOwner(userId);
-        return new Group(new Guid(), creator, name, [], [], [creator], DateTime.UtcNow, null, null);
+        return new Group(new GroupId(new Guid()), creator, name, [], [creator], DateTime.UtcNow, null, null);
     }
     
     public Result<Invitation> SendInvitation(User user, Member sender)
     {
-        if (Members.Any(e => e.UserId == user.Id))
+        if (Members.Any(e => e.UserId.Equals(user.Id)))
         {
             return Result<Invitation>.Failure(GroupError.UserIsAMember);
         }
         
-        if(Invitations.Any(e => e.UserId == user.Id))
+        if(Invitations.Any(e => e.UserId.Equals(user.Id) ))
         {
             return Result<Invitation>.Failure(GroupError.UserAlreadyInvited);
         }
         
-        var invitation = new Invitation(new Guid(), user, sender, InvitationStatus.Pending,DateTime.UtcNow, null, null);
+        var invitation = new Invitation( new InvitationId(new Guid()), user.Id, sender, InvitationStatus.Pending,DateTime.UtcNow, null, null);
         
         _invitations.Add(invitation);
 

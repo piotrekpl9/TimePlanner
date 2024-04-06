@@ -1,25 +1,25 @@
 namespace Domain.Primitives;
 
-public abstract class Entity : IEquatable<Entity>
+public abstract class Entity<T> : IEquatable<Entity<T>> where T : ValueObject
 {
-    protected Entity(Guid id)
+    protected Entity(T id)
     {
         Id = id;
     }
 
-    public Guid Id { get; private init; }
+    public T Id { get; private init; }
 
-    public static bool operator ==(Entity? first, Entity? second)
+    public static bool operator ==(Entity<T>? first, Entity<T>? second)
     {
         return first is not null && second is not null && first.Equals(second);
     } 
     
-    public static bool operator !=(Entity? first, Entity? second)
+    public static bool operator !=(Entity<T>? first, Entity<T>? second)
     {
         return !(first == second);
     }
     
-    public bool Equals(Entity? other)
+    public bool Equals(Entity<T>? other)
     {
         if (other is null)
         {
@@ -30,8 +30,7 @@ public abstract class Entity : IEquatable<Entity>
         {
             return false;
         }
-
-        return other.Id == Id;
+        return other.Id.Equals(Id);
     }
 
     public override bool Equals(object? obj)
@@ -46,12 +45,12 @@ public abstract class Entity : IEquatable<Entity>
             return false;
         }
 
-        if (obj is not Entity entity)
+        if (obj is not Entity<T> entity)
         {
             return false;
         }
 
-        return entity.Id == Id;
+        return entity.Id.Equals(Id);
     }
 
     public override int GetHashCode()

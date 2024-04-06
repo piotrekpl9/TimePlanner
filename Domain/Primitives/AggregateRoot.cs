@@ -1,8 +1,8 @@
 namespace Domain.Primitives;
 
-public abstract class AggregateRoot : Entity
+public abstract class AggregateRoot<T> : Entity<T> where T : ValueObject
 {
-    protected AggregateRoot(Guid id) : base(id)
+    protected AggregateRoot(T id) : base(id)
     {
     }
     

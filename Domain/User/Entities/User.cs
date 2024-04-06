@@ -1,13 +1,12 @@
 using Domain.Primitives;
 using Domain.Shared;
 using Domain.User.Errors;
+using Domain.User.ValueObjects;
 
 namespace Domain.User.Entities;
 
-public sealed class User : Entity
+public sealed class User : Entity<UserId>
 {
-    private List<Task> _tasks;
-    public IReadOnlyCollection<Task> Tasks => _tasks.AsReadOnly();
     public string Name { get; private set; }
     public string Surname { get; private set; }
     public string Email { get; private set; }
@@ -17,12 +16,11 @@ public sealed class User : Entity
     public DateTime? DeletedAt { get; private set; }
     
     private User(
-        Guid id, 
+        UserId id, 
         string name,
         string surname,
         string email, 
         string password, 
-        List<Task> tasks,
         DateTime createdAt, 
         DateTime? updatedAt,
         DateTime? deletedAt) : base(id)
@@ -34,7 +32,6 @@ public sealed class User : Entity
         CreatedAt = createdAt;
         UpdatedAt = updatedAt;
         DeletedAt = deletedAt;
-        _tasks = tasks;
     }
 
     static User Create(
@@ -45,12 +42,11 @@ public sealed class User : Entity
         )
     {
         return new User(
-            new Guid(),
+            new UserId(new Guid()),
             name,
             surname, 
             email, 
             password,
-            new List<Task>(),
             DateTime.UtcNow,
             null,
             null
@@ -68,11 +64,5 @@ public sealed class User : Entity
         
         return Result.Success();
     }
-
-    public Result AssignTask(Task task)
-    {
-        _tasks.Add(task);
-        
-        return Result.Success();
-    }
+    
 }
