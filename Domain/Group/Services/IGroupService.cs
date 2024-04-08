@@ -10,8 +10,6 @@ public interface IGroupService
     public Task<Group> CreateGroup(String name, Guid userId);
     //Only allow members to read content of the group
     public Task<Group> ReadGroup(GroupId id);   
-    public Task<Group> ReadGroupByMemberUserId(UserId id);   
-
     public Task<InvitationDto> InviteUserByEmail(string email);   
     public Task<InvitationDto> CancelInvitation(InvitationId id);
 
