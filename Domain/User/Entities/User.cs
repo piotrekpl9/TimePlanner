@@ -34,7 +34,7 @@ public sealed class User : Entity<UserId>
         DeletedAt = deletedAt;
     }
 
-    static User Create(
+    public static User Create(
         string name,
         string surname,
         string email, 
