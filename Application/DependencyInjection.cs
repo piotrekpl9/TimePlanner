@@ -1,4 +1,5 @@
 using Application.Authentication;
+using Application.Common.Data;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 

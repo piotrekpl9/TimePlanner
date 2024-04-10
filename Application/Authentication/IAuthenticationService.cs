@@ -1,9 +1,11 @@
+using Application.Authentication.Model;
+using Domain.Shared;
 using Domain.User.Models.Dtos;
 
 namespace Application.Authentication;
 
 public interface IAuthenticationService
 {
-    AuthenticationResult Register(CreateUserDto user);
-    AuthenticationResult Login(string email, string password);
+    Task<Result<RegisterResponse>> Register(CreateUserDto userDto);
+    RegisterResponse Login(string email, string password);
 }

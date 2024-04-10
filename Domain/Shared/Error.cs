@@ -12,4 +12,5 @@ public class Error
     }
 
     public static Error None => new Error(string.Empty, string.Empty);
+    public static Error NullSuccessValue => new Error("NullSuccessValue", "Result is success but returned value is null!");
 }

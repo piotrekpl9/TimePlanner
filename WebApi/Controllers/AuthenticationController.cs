@@ -14,11 +14,14 @@ public class AuthenticationController : Controller
         _authenticationService = authenticationService;
     }
 
-    // GET
     [HttpPost]
-    public IActionResult Login([FromBody] CreateUserDto createUserDto)
+    public async Task<IActionResult> Login([FromBody] CreateUserDto createUserDto)
     {
-        var result =  _authenticationService.Register(createUserDto);
-        return Ok(result);
+        var result = await _authenticationService.Register(createUserDto);
+        if (result.IsFailure)
+        {
+            return BadRequest(result.Error);
+        }
+        return Ok(result.Value);
     }
 }

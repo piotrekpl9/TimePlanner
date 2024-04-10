@@ -4,12 +4,13 @@ using Domain.User.ValueObjects;
 
 namespace Domain.User.Repositories;
 using Entities;
- 
+using System.Threading.Tasks;
 public interface IUserRepository
 {
-    Task<User> Create(CreateUserDto userDto);
-    Task<User> Read(UserId groupId);
-    Task<List<User>> ReadAllByGroupId(GroupId groupId);
+    Task Add(User user);
+    Task<User?> GetById(UserId id);
+    Task<User?> GetByEmail(String email);
+    Task<List<User>> GetAllByGroupId(GroupId groupId);
     Task<User> Update(User user);
     Task<bool> Delete(UserId id);
 }
