@@ -14,7 +14,7 @@ public sealed class User : Entity<UserId>
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
     public DateTime? DeletedAt { get; private set; }
-    
+
     private User(
         UserId id, 
         string name,
@@ -42,7 +42,7 @@ public sealed class User : Entity<UserId>
         )
     {
         return new User(
-            new UserId(new Guid()),
+            new UserId(Guid.NewGuid()),
             name,
             surname, 
             email, 

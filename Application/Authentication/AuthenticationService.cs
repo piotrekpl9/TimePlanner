@@ -1,3 +1,4 @@
+using Application.Common.Data;
 using Domain.User.Errors;
 
 namespace Application.Authentication;
@@ -14,28 +15,37 @@ public class AuthenticationService : IAuthenticationService
 {
     private readonly IJwtTokenGenerator _jwtTokenGenerator;
     private readonly IUserRepository _userRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public AuthenticationService(IJwtTokenGenerator jwtTokenGenerator, IUserRepository userRepository)
+    public AuthenticationService(IJwtTokenGenerator jwtTokenGenerator, IUserRepository userRepository, IUnitOfWork unitOfWork)
     {
         _jwtTokenGenerator = jwtTokenGenerator;
         _userRepository = userRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<Result<RegisterResponse>> Register(CreateUserDto userDto)
     {
-        var existingUser = await _userRepository.GetByEmail(userDto.Email);
-        if (existingUser is not null)
+        try
         {
-            return Result<RegisterResponse>.Failure(UserError.UserAlreadyExists);
+            var existingUser = await _userRepository.GetByEmail(userDto.Email);
+            if (existingUser is not null)
+            {
+                return Result<RegisterResponse>.Failure(UserError.UserAlreadyExists);
+            }
+
+            User user = User.Create(userDto.Name, userDto.Surname, userDto.Email, userDto.Password);
+
+            await _userRepository.Add(user);
+            var token = _jwtTokenGenerator.GenerateToken(user.Id, user.Name, user.Surname);
+
+            await _unitOfWork.SaveChangesAsync();
+            return Result<RegisterResponse>.Success(new RegisterResponse(token, user.Name, user.Surname, user.Email));
         }
-        
-        User user = User.Create(userDto.Name,userDto.Surname,userDto.Email,userDto.Password);
-        
-        var result = await _userRepository.Add(user);
-
-        var token = _jwtTokenGenerator.GenerateToken(result.Id, result.Name, result.Surname);
-
-        return Result<RegisterResponse>.Success(new RegisterResponse(token, result.Name, result.Surname,result.Email));
+        catch (Exception e)
+        {
+            return Result<RegisterResponse>.Failure(new Error("error" ,e.Message));
+        }
     }
 
     public RegisterResponse Login(string email, string password)

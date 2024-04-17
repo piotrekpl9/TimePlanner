@@ -8,7 +8,7 @@ public class Result<TValue> : Result
     
     public readonly TValue? Value;
     
-    public static Result<TValue> Success(TValue? value) => new(value, Shared.Error.None);
+    public static Result<TValue> Success(TValue? value) => new(value, Error.None);
 
     public static Result<TValue> Failure(Error error) => new(default,error);
 

@@ -23,11 +23,11 @@ public sealed class Member : Entity<MemberId>
 
     public static Member Create(Invitation invitation)
     {
-        return new Member(new MemberId(new Guid()), invitation.UserId, Role.Basic, DateTime.UtcNow, null, null);
+        return new Member(new MemberId(Guid.NewGuid()), invitation.UserId, Role.Basic, DateTime.UtcNow, null, null);
     }
     
     public static Member CreateOwner(UserId userId)
     {
-        return new Member(new MemberId(new Guid()), userId, Role.Admin, DateTime.UtcNow, null, null);
+        return new Member(new MemberId(Guid.NewGuid()), userId, Role.Admin, DateTime.UtcNow, null, null);
     }
 }

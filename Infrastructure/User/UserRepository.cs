@@ -8,39 +8,42 @@ using Domain.User.Repositories;
 using Domain.User.ValueObjects;
 using Domain.User.Entities;
 
-public class UserRepository : IUserRepository
+public class UserRepository(IApplicationDbContext dbContext, IUnitOfWork unitOfWork) : IUserRepository
 {
-    private readonly ApplicationDbContext _dbContext;
-    private readonly IUnitOfWork _unitOfWork;
-    
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
+
     public async Task Add(User user)
     {
-        await _dbContext.Users.AddAsync(user);
+        await dbContext.Users.AddAsync(user);
     }
 
     public Task<User?> GetById(UserId id)
     {
-        return _dbContext.Users.SingleOrDefaultAsync(user => user.Id.Equals(id));
+        return dbContext.Users.SingleOrDefaultAsync(user => user.Id.Equals(id));
     }
 
     public Task<User?> GetByEmail(string email)
     {
-        return _dbContext.Users.SingleOrDefaultAsync(user => user.Email == email);
+        return dbContext.Users.SingleOrDefaultAsync(user => user.Email == email);
     }
-    //TODO ????????
-    public Task<List<User>> GetAllByGroupId(GroupId groupId)
-    {
-        return _dbContext.Users.SingleOrDefaultAsync(user => user..Equals(id));
-
-    }
-
-    public Task<User> Update(User user)
-    {
-        return _dbContext.Users.Update(user);
-    }
-
-    public Task<bool> Delete(UserId id)
+    public  Task<List<User>> GetAllByGroupId(GroupId groupId)
     {
         throw new NotImplementedException();
+    }
+
+    public void Update(User user)
+    {
+         dbContext.Users.Update(user);
+    }
+
+    public async Task<bool> Delete(UserId id)
+    {
+        var user = await dbContext.Users.SingleOrDefaultAsync(user => user.Id.Equals(id));
+        if (user is null)
+        {
+            return false;
+        }
+        dbContext.Users.Remove(user);
+        return true;
     }
 }

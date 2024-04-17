@@ -11,6 +11,6 @@ public interface IUserRepository
     Task<User?> GetById(UserId id);
     Task<User?> GetByEmail(String email);
     Task<List<User>> GetAllByGroupId(GroupId groupId);
-    Task<User> Update(User user);
+    void Update(User user);
     Task<bool> Delete(UserId id);
 }

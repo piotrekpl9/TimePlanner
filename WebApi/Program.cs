@@ -1,12 +1,16 @@
 using Application;
+using Application.Common.Data;
 using Infrastructure;
+using Infrastructure.Common;
+using Microsoft.EntityFrameworkCore;
 using Presentation;
-using Serilog;
-
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddDbContext<ApplicationDbContext>(
+    o => o.UseNpgsql(builder.Configuration.GetConnectionString("Database"))
+    );
 
 builder.Services
     .AddApplication()

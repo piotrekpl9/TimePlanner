@@ -5,9 +5,9 @@ namespace Infrastructure.Common;
 
 public class UnitOfWork : IUnitOfWork
 {
-    private readonly ApplicationDbContext _dbContext;
+    private readonly IApplicationDbContext _dbContext;
 
-    public UnitOfWork(ApplicationDbContext dbContext)
+    public UnitOfWork(IApplicationDbContext dbContext)
     {
         _dbContext = dbContext;
     }
