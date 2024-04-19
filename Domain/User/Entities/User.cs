@@ -34,14 +34,16 @@ public sealed class User : Entity<UserId>
         DeletedAt = deletedAt;
     }
 
-    public static User Create(
+    public static Result<User> Create(
         string name,
         string surname,
         string email, 
         string password
         )
     {
-        return new User(
+       
+        
+        return Result<User>.Success(new User(
             new UserId(Guid.NewGuid()),
             name,
             surname, 
@@ -50,14 +52,14 @@ public sealed class User : Entity<UserId>
             DateTime.UtcNow,
             null,
             null
-            );
+            ));
     }
-
+   
     public Result Delete()
     {
         if (DeletedAt.HasValue)
         {
-            return Result.Failure(UserError.UserAlreadyDeleted);
+            return Result.Failure(UserError.AlreadyDeleted);
         }
         
         DeletedAt = DateTime.UtcNow;

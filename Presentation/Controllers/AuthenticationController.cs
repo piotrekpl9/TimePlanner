@@ -1,5 +1,7 @@
 using Application.Authentication;
-using Domain.User.Models.Dtos;
+using Application.Authentication.Model;
+using FluentValidation;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Presentation.Controllers;
@@ -9,13 +11,35 @@ public class AuthenticationController(IAuthenticationService authenticationServi
 {
     [HttpPost]
     [Route("/signUp")]
-    public async Task<IActionResult> SignUp([FromBody] CreateUserDto createUserDto)
+    public async Task<IResult> SignUp(
+        [FromBody] RegisterRequest registerRequest,
+        IValidator<RegisterRequest> validator)
     {
-        var result = await authenticationService.Register(createUserDto);
+        var validationResult = await validator.ValidateAsync(registerRequest);
+        if (!validationResult.IsValid)
+        {
+            return Results.ValidationProblem(validationResult.ToDictionary());
+        }
+        var result = await authenticationService.Register(registerRequest);
         if (result.IsFailure)
         {
-            return BadRequest(result.Error);
+            return Results.BadRequest(result.Error);
         }
-        return Ok(result.Value);
+        return Results.Ok(result.Value);
+    }  
+    
+    [HttpPost]
+    [Route("/signIn")]
+    public async Task<IResult> SignIn(
+        [FromBody] LoginRequest loginRequest,
+        IValidator<LoginRequest> validator)
+    {   
+        var validationResult = await validator.ValidateAsync(loginRequest);
+        if (!validationResult.IsValid)
+        {
+            return Results.ValidationProblem(validationResult.ToDictionary());
+        }
+        var result = await authenticationService.Login(loginRequest);
+        return result.IsSuccess ? Results.Ok(result.Value) : Results.BadRequest(result.Error);
     }
 }

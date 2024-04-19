@@ -1,3 +1,4 @@
+using Application.Authentication;
 using Application.Common.Data;
 using Application.Common.Interfaces;
 using Application.Common.Services;
@@ -18,6 +19,7 @@ public static class DependencyInjection
         services.AddScoped<IApplicationDbContext,ApplicationDbContext>();
         services.AddScoped<IUnitOfWork,UnitOfWork>();
         services.AddScoped<IUserRepository,UserRepository>();
+        services.AddScoped<IAuthenticationService,AuthenticationService>();
         services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
         return services;
