@@ -13,7 +13,7 @@ public class TaskId : ValueObject
 
     public static TaskId Create()
     {
-        return new TaskId(new Guid());
+        return new TaskId(Guid.NewGuid());
     }
     
     public override IEnumerable<object> GetAtomicValues()

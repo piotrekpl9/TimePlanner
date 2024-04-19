@@ -3,8 +3,7 @@ public class Result
 {
     protected Result(Error error)
     {
-
-        IsSuccess = error == Error.None;
+        IsSuccess = error.Equals(Error.None);
         Error = error;
     }
     

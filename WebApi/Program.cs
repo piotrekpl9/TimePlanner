@@ -1,19 +1,21 @@
 using Application;
+using Application.Common.Data;
 using Infrastructure;
+using Infrastructure.Common;
+using Microsoft.EntityFrameworkCore;
 using Presentation;
-using Serilog;
-
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddDbContext<ApplicationDbContext>(
+    o => o.UseNpgsql(builder.Configuration.GetConnectionString("Database"))
+    );
 
 builder.Services
     .AddApplication()
-    .AddInfrastructure()
+    .AddInfrastructure(builder.Configuration)
     .AddPresentation();
-
-builder.Host.UseSerilog((context, configuration) => configuration.ReadFrom.Configuration(context.Configuration));
 
 var app = builder.Build();
 
@@ -23,8 +25,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseSerilogRequestLogging();
 
 app.UseHttpsRedirection();
 
+app.MapControllers();
 app.Run();

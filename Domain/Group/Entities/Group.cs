@@ -34,7 +34,7 @@ public sealed class Group : AggregateRoot<GroupId>
     public static Group Create(Guid id,string name, UserId userId)
     {
         var creator = Member.CreateOwner(userId);
-        return new Group(new GroupId(new Guid()), creator, name, [], [creator], DateTime.UtcNow, null, null);
+        return new Group(new GroupId(Guid.NewGuid()), creator, name, [], [creator], DateTime.UtcNow, null, null);
     }
     
     public Result<Invitation> SendInvitation(User user, Member sender)
@@ -49,7 +49,7 @@ public sealed class Group : AggregateRoot<GroupId>
             return Result<Invitation>.Failure(GroupError.UserAlreadyInvited);
         }
         
-        var invitation = new Invitation( new InvitationId(new Guid()), user.Id, sender, InvitationStatus.Pending,DateTime.UtcNow, null, null);
+        var invitation = new Invitation( new InvitationId(Guid.NewGuid()), user.Id, sender, InvitationStatus.Pending,DateTime.UtcNow, null, null);
         
         _invitations.Add(invitation);
 
