@@ -42,4 +42,6 @@ public class AuthenticationController(IAuthenticationService authenticationServi
         var result = await authenticationService.Login(loginRequest);
         return result.IsSuccess ? Results.Ok(result.Value) : Results.BadRequest(result.Error);
     }
+    
+  
 }
