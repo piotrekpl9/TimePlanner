@@ -21,33 +21,9 @@ public static class DependencyInjection
         
         services.AddEndpointsApiExplorer();
         
-        services.AddSwaggerGen(opt =>
-        {
-            opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-            {
-                In = ParameterLocation.Header,
-                Name = "Authorization",
-                BearerFormat = "JWT",
-                Scheme = "bearer"
-            });
-            opt.AddSecurityRequirement(new OpenApiSecurityRequirement
-            {
-                {
-                    new OpenApiSecurityScheme
-                    {
-                        Reference = new OpenApiReference
-                        {
-                            Type=ReferenceType.SecurityScheme,
-                            Id="Bearer"
-                        }
-                    },
-                    new string[]{}
-                }
-            });
-        });
-        
         services.Configure<JwtSettings>(jwtSettings);
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>(provider => dateTimeProvider);
+        
         services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
