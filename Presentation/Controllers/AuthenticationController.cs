@@ -21,11 +21,7 @@ public class AuthenticationController(IAuthenticationService authenticationServi
             return Results.ValidationProblem(validationResult.ToDictionary());
         }
         var result = await authenticationService.Register(registerRequest);
-        if (result.IsFailure)
-        {
-            return Results.BadRequest(result.Error);
-        }
-        return Results.Ok(result.Value);
+        return result.IsSuccess ? Results.Ok(result.Value) : Results.BadRequest(result.Error);
     }  
     
     [HttpPost]
@@ -42,4 +38,6 @@ public class AuthenticationController(IAuthenticationService authenticationServi
         var result = await authenticationService.Login(loginRequest);
         return result.IsSuccess ? Results.Ok(result.Value) : Results.BadRequest(result.Error);
     }
+    
+  
 }

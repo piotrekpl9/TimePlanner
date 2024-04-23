@@ -1,18 +1,16 @@
+using Application.Authentication;
+using Application.Authentication.Model;
 using Application.Common.Data;
+using Application.Common.Interfaces;
+using Domain.Shared;
 using Domain.User.Errors;
+using Domain.User.Repositories;
 using Microsoft.AspNetCore.Identity;
 
-namespace Application.Authentication;
-
-using Model;
-using Common.Interfaces;
-using Domain.Shared;
-using Domain.User.Repositories;
-using Domain.User.Models.Dtos;
-using Domain.User.Entities;
+namespace Infrastructure.Authentication;
 
 public class AuthenticationService(
-    IPasswordHasher<User> passwordHasher,
+    IPasswordHasher<Domain.User.Entities.User> passwordHasher,
     IJwtTokenGenerator jwtTokenGenerator,
     IUserRepository userRepository,
     IUnitOfWork unitOfWork)
@@ -23,7 +21,7 @@ public class AuthenticationService(
     {
         try
         {
-            var userResult = User.Create(userDto.Name, userDto.Surname, userDto.Email, passwordHasher.HashPassword(null,userDto.Password));
+            var userResult = Domain.User.Entities.User.Create(userDto.Name, userDto.Surname, userDto.Email, passwordHasher.HashPassword(null,userDto.Password));
 
             if (userResult.IsFailure || userResult.Value == null)
             {
@@ -36,7 +34,7 @@ public class AuthenticationService(
             var token = jwtTokenGenerator.GenerateToken(user.Id, user.Name, user.Surname);
 
             await unitOfWork.SaveChangesAsync();
-            return Result<RegisterResponse>.Success(new RegisterResponse(token, user.Name, user.Surname, user.Email));
+            return Result<RegisterResponse>.Success(new RegisterResponse(user.Name, user.Surname, user.Email));
         }
         catch (Exception e)
         {
@@ -65,6 +63,6 @@ public class AuthenticationService(
         
         var token = jwtTokenGenerator.GenerateToken(user.Id, user.Name, user.Surname);
 
-        return Result<LoginResponse>.Success(new LoginResponse(token));
+        return Result<LoginResponse>.Success(new LoginResponse(token, user.Id.Value));
     }
 }
