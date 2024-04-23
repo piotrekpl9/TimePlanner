@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Application.Authentication;
 using Application.Authentication.Model;
+using Domain.Shared;
 using Domain.User.Services;
 using Domain.User.ValueObjects;
 using FluentValidation;
@@ -27,8 +28,17 @@ public class UserController(IUserService userService) : Controller
             return Results.ValidationProblem(validationResult.ToDictionary());
         }
 
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var result = await userService.UpdatePassword(new UserId(Guid.Parse(userId)),updateRequest);
+        var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
+        var targetUserId = new UserId(updateRequest.Guid);
+        var authorisationResult = userId.Equals(targetUserId);
+
+        if (!authorisationResult)
+        {
+            return Results.Forbid();
+        }
+        
+        var result = await userService.UpdatePassword(targetUserId,updateRequest);
         return result.IsSuccess ? Results.Ok() : Results.BadRequest(result.Error);
+
     }
 }

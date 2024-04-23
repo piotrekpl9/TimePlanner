@@ -12,7 +12,7 @@ namespace Application.User;
 using Domain.User.Entities;
 
 public class UserService(
-    IPasswordHasher<Domain.User.Entities.User> passwordHasher,
+    IPasswordHasher<User> passwordHasher,
     IUserRepository userRepository,
     IUnitOfWork unitOfWork) : IUserService
 {
@@ -21,14 +21,42 @@ public class UserService(
         throw new NotImplementedException();
     }
 
-    public Task<bool> Delete(UserId id)
+    public async Task<Result> Delete(UserId id)
     {
-        throw new NotImplementedException();
+        var user = await userRepository.GetById(id);
+        if (user is null)
+        {
+            return Result.Failure(UserError.DoesntExists);
+        }
+
+        var res = user.Delete();
+
+        if (res.IsFailure)
+        {
+            return res;
+        }
+        
+        userRepository.Update(user);
+
+        await unitOfWork.SaveChangesAsync();
+        
+        return Result.Success();
     }
 
-    public Task<Result> UpdatePassword(UserId id, PasswordUpdateRequest passwordUpdateRequest)
+    public async Task<Result> UpdatePassword(UserId id, PasswordUpdateRequest passwordUpdateRequest)
     {
-        throw new NotImplementedException();
+        var user = await userRepository.GetById(id);
+        if (user is null)
+        {
+            return Result.Failure(UserError.DoesntExists);
+        }
+
+        user.Password = passwordHasher.HashPassword(null, passwordUpdateRequest.NewPassword);
+        userRepository.Update(user);
+
+        await unitOfWork.SaveChangesAsync();
+        
+        return Result.Success();
     }
 
 }

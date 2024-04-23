@@ -34,7 +34,7 @@ public class AuthenticationService(
             var token = jwtTokenGenerator.GenerateToken(user.Id, user.Name, user.Surname);
 
             await unitOfWork.SaveChangesAsync();
-            return Result<RegisterResponse>.Success(new RegisterResponse(token, user.Name, user.Surname, user.Email));
+            return Result<RegisterResponse>.Success(new RegisterResponse(user.Name, user.Surname, user.Email));
         }
         catch (Exception e)
         {
@@ -63,6 +63,6 @@ public class AuthenticationService(
         
         var token = jwtTokenGenerator.GenerateToken(user.Id, user.Name, user.Surname);
 
-        return Result<LoginResponse>.Success(new LoginResponse(token));
+        return Result<LoginResponse>.Success(new LoginResponse(token, user.Id.Value));
     }
 }

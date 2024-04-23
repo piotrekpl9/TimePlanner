@@ -1,7 +1,8 @@
 namespace Application.Authentication.Model;
 
-public class PasswordUpdateRequest(string oldPassword, string newPassword)
+public class PasswordUpdateRequest(string oldPassword, string newPassword, Guid guid)
 {
-    public string OldPassword { get; set; } = oldPassword; 
-    public string NewPassword { get; set; } = newPassword;
+    public Guid Guid { get; } = guid; 
+    public string OldPassword { get;  } = oldPassword; 
+    public string NewPassword { get; } = newPassword;
 }
