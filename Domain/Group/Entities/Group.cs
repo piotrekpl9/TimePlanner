@@ -44,7 +44,7 @@ public sealed class Group : AggregateRoot<GroupId>
         return new Group(groupGuid,  name, [], [creator], DateTime.UtcNow, null, null);
     }
     
-    public Result<Invitation> SendInvitation(User user, UserId senderId)
+    public Result<Invitation> Invite(User user, UserId senderId)
     {
         if(Invitations.Any(e => e.UserId.Equals(user.Id) && e.Status is InvitationStatus.Pending))
         {
@@ -97,6 +97,7 @@ public sealed class Group : AggregateRoot<GroupId>
     }
     public Result RemoveMember(MemberId id)
     {
+        //TODO add block to removing only group administrator
         var member = _members.FirstOrDefault(member => member.Id.Equals(id));
         if (member is null)
         {

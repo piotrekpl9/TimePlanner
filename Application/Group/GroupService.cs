@@ -21,7 +21,7 @@ public class GroupService(
     public async Task<Result<Group>> CreateGroup(string name, UserId userId)
     {
         var user = await userRepository.GetById(userId);
-
+        //TODO check if user is not already in group!!!
         if (user is null)
         {
             return Result<Group>.Failure(Error.NullSuccessValue);
@@ -76,7 +76,7 @@ public class GroupService(
         }
         var group = groupResult.Value;
         
-        var invitationResult = group.SendInvitation(targetUser, invitingUserId);
+        var invitationResult = group.Invite(targetUser, invitingUserId);
         if (invitationResult.IsFailure)
         {
             return Result<InvitationDto>.Failure(invitationResult.Error);
