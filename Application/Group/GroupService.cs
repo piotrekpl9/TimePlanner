@@ -21,10 +21,16 @@ public class GroupService(
     public async Task<Result<Group>> CreateGroup(string name, UserId userId)
     {
         var user = await userRepository.GetById(userId);
-        //TODO check if user is not already in group!!!
         if (user is null)
         {
-            return Result<Group>.Failure(Error.NullSuccessValue);
+            return Result<Group>.Failure(UserError.DoesntExists);
+        }
+        
+        var exitingGroupCheck = await groupRepository.ReadGroupByUserId(userId);
+
+        if (exitingGroupCheck is not null)
+        {
+            return Result<Group>.Failure(GroupError.UserAlreadyInOtherGroup);
         }
         
         var group = Group.Create(name, userId);
@@ -235,5 +241,22 @@ public class GroupService(
         var result = group.RemoveMember(id);
 
         return result;
+    }
+
+    public async Task<Result> Leave(UserId userId, GroupId groupId)
+    {
+        var group = await groupRepository.Read(groupId);
+        if (group is null)
+        {
+            return Result.Failure(GroupError.GroupNotFound);
+        }
+        
+        var member = group.Members.FirstOrDefault(member => member.UserId.Equals(userId));
+        if (member is null)
+        {
+            return Result.Failure(GroupError.UserIsNotMember);
+        }
+
+        return group.RemoveMember(member.Id);
     }
 }

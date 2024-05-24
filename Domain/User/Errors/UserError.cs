@@ -13,7 +13,6 @@ public class UserError(string code, string description) : Error(code, descriptio
     public static UserError EmailEmpty => new UserError("UserEmailEmpty", "Email cannot be empty!");
     public static UserError PasswordToShort => new UserError("UserPasswordToShort", "Password is to short! Minimum password length is 6.");
     public static UserError PasswordToLong => new UserError("UserPasswordToLong", "Password is to long! Maximum password length is 30.");
-    
     //PASSWORD UPDATE ERRORS
     public static UserError PasswordsIdentical => new UserError("PasswordsIdentical", "New password has to be different than old one!");
     public static UserError BadOldPassword => new UserError("BadOldPassword", "Provided old password is invalid!");

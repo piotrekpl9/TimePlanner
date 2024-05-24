@@ -21,4 +21,5 @@ public class GroupError(string code, string description) : Error(code, descripti
     public static GroupError UserIsNotInvitationOwner => new GroupError("UserIsNotInvitationOwner", "User is not invitation owner!");
     public static GroupError UserInvitingItself => new GroupError("UserInvitingItself", "User is trying to invite itself!");
     public static GroupError UserIsNotGroupOwner => new GroupError("UserIsNotGroupOwner", "User is not group owner!");
+    public static GroupError UserAlreadyInOtherGroup => new GroupError("UserAlreadyInOtherGroup", "User is already other group member!");
 }

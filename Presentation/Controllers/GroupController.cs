@@ -71,4 +71,26 @@ public class GroupController(IGroupService groupService) : Controller
         var result = await groupService.CancelInvitation(new InvitationId(cancelInvitationRequest.InvitationGuid), userId);
         return result.IsSuccess ? Results.Ok() : Results.BadRequest(result.Error);
     }
+    
+    [HttpPost]
+    [Authorize]
+    [Route("/leave")]
+    public async Task<IResult> LeaveGroup([FromBody] LeaveGroupRequest leaveGroupRequest)
+    { 
+        var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
+      
+        var result = await groupService.Leave(userId, new GroupId(leaveGroupRequest.GroupGuid));
+        return result.IsSuccess ? Results.Ok() : Results.BadRequest(result.Error);
+    }
+    
+    [HttpPost]
+    [Authorize]
+    [Route("/delete")]
+    public async Task<IResult> DeleteGroup([FromBody] DeleteGroupRequest deleteGroupRequest)
+    { 
+        var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
+      
+        var result = await groupService.DeleteGroup(new GroupId(deleteGroupRequest.GroupGuid), userId);
+        return result.IsSuccess ? Results.Ok(result.Value) : Results.BadRequest(result.Error);
+    }
 }

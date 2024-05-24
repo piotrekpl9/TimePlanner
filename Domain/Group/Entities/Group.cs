@@ -95,10 +95,9 @@ public sealed class Group : AggregateRoot<GroupId>
     {
         return invitation.Cancel();
     }
-    public Result RemoveMember(MemberId id)
+    public Result RemoveMember(MemberId targetMemberId)
     {
-        //TODO add block to removing only group administrator
-        var member = _members.FirstOrDefault(member => member.Id.Equals(id));
+        var member = _members.FirstOrDefault(member => member.Id.Equals(targetMemberId));
         if (member is null)
         {
             return Result.Failure(GroupError.MemberNotFound);
