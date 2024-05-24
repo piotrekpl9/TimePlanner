@@ -8,7 +8,6 @@ public class GroupId : ValueObject
     {
         Value = value;
     }
-
     public Guid Value { get; }
     public override IEnumerable<object> GetAtomicValues()
     {

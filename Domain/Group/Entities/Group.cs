@@ -10,46 +10,64 @@ using Domain.User.Entities;
 
 public sealed class Group : AggregateRoot<GroupId>
 {
-    private readonly List<Invitation> _invitations;
-    private readonly List<Member> _members;
-    public IReadOnlyCollection<Invitation> Invitations => _invitations.AsReadOnly();
-    public IReadOnlyCollection<Member> Members => _members.AsReadOnly();
+    private readonly List<Invitation> _invitations = new List<Invitation>();
+    private readonly List<Member> _members = new List<Member>();
+    public IReadOnlyCollection<Invitation> Invitations => _invitations.ToList();
+    public IReadOnlyCollection<Member> Members => _members.ToList();
     public string Name { get; set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
     public DateTime? DeletedAt { get; private set; }
-    public Member Creator { get; set; }
     
-    private Group(GroupId id, Member creator,string name,  List<Invitation> invitations, List<Member> members, DateTime createdAt,DateTime? updatedAt,DateTime? deletedAt) : base(id)
+    private Group(GroupId id, string name, List<Invitation> invitations, List<Member> members, DateTime createdAt,DateTime? updatedAt,DateTime? deletedAt) : base(id)
+    {
+        Name = name;
+        CreatedAt = createdAt;
+        UpdatedAt = updatedAt;
+        DeletedAt = deletedAt;        
+        _members = members;
+        _invitations = invitations;
+    }
+
+    private Group(GroupId id,string name, DateTime createdAt, DateTime? updatedAt, DateTime? deletedAt) : base(id)
     {
         Name = name;
         CreatedAt = createdAt;
         UpdatedAt = updatedAt;
         DeletedAt = deletedAt;
-        Creator = creator;
-        _invitations = invitations;
-        _members = members;
-    }
-
-    public static Group Create(Guid id,string name, UserId userId)
-    {
-        var creator = Member.CreateOwner(userId);
-        return new Group(new GroupId(Guid.NewGuid()), creator, name, [], [creator], DateTime.UtcNow, null, null);
     }
     
-    public Result<Invitation> SendInvitation(User user, Member sender)
+    public static Group Create(string name, UserId userId)
     {
-        if (Members.Any(e => e.UserId.Equals(user.Id)))
-        {
-            return Result<Invitation>.Failure(GroupError.UserIsAMember);
-        }
-        
-        if(Invitations.Any(e => e.UserId.Equals(user.Id) ))
+        var groupGuid = new GroupId(Guid.NewGuid());
+        var creator = Member.CreateOwner(groupGuid,userId);
+        return new Group(groupGuid,  name, [], [creator], DateTime.UtcNow, null, null);
+    }
+    
+    public Result<Invitation> Invite(User user, UserId senderId)
+    {
+        if(Invitations.Any(e => e.UserId.Equals(user.Id) && e.Status is InvitationStatus.Pending))
         {
             return Result<Invitation>.Failure(GroupError.UserAlreadyInvited);
         }
         
-        var invitation = new Invitation( new InvitationId(Guid.NewGuid()), user.Id, sender, InvitationStatus.Pending,DateTime.UtcNow, null, null);
+        if (Members.Any(member => member.UserId.Equals(user.Id) && member.DeletedAt is null))
+        {
+            return Result<Invitation>.Failure(GroupError.UserIsAMember);
+        }
+        
+        if (DeletedAt is not null)
+        {
+            return Result<Invitation>.Failure(GroupError.GroupIsDeleted);
+        }
+
+        var sender = Members.FirstOrDefault(member => member.UserId.Equals(senderId));
+        if (sender is null)
+        {
+            return Result<Invitation>.Failure(GroupError.UserIsNotMember);
+        }
+        
+        var invitation = new Invitation( new InvitationId(Guid.NewGuid()), Id, user.Id, sender, InvitationStatus.Pending,DateTime.UtcNow, null, null);
         
         _invitations.Add(invitation);
 
@@ -70,14 +88,24 @@ public sealed class Group : AggregateRoot<GroupId>
     
     public Result RejectInvitation(Invitation invitation)
     {
-        var result = invitation.Reject();
-        if (result.IsSuccess)
-        {
-            return Result.Success();
-        }
-        return Result.Failure(result.Error);
+        return invitation.Reject();
     }
+    
+    public Result Cancel(Invitation invitation)
+    {
+        return invitation.Cancel();
+    }
+    public Result RemoveMember(MemberId targetMemberId)
+    {
+        var member = _members.FirstOrDefault(member => member.Id.Equals(targetMemberId));
+        if (member is null)
+        {
+            return Result.Failure(GroupError.MemberNotFound);
+        }
 
+        var result = _members.Remove(member);
+        return result ? Result.Success() : Result.Failure(GroupError.FailedToRemoveMember);
+    }
     public Result Delete()
     {
         if (DeletedAt is not null)

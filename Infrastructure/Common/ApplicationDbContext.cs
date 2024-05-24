@@ -3,7 +3,6 @@ using Domain.Group.Entities;
 using Microsoft.EntityFrameworkCore;
 namespace Infrastructure.Common;
 using Domain.User.Entities;
-using Domain.Task.Entities;
 
 public class ApplicationDbContext : DbContext, IApplicationDbContext
 {
@@ -23,4 +22,5 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     }
 
     public DbSet<User> Users { get; set; }
+    public DbSet<Group> Groups { get; set; }
 }

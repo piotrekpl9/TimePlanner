@@ -38,7 +38,7 @@ public class UserRepository(IApplicationDbContext dbContext, IUnitOfWork unitOfW
 
     public async Task<bool> Delete(UserId id)
     {
-        var user = await dbContext.Users.SingleOrDefaultAsync(user => user.Id.Equals(id));
+        var user = await GetById(id);
         if (user is null)
         {
             return false;
