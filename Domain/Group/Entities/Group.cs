@@ -91,7 +91,7 @@ public sealed class Group : AggregateRoot<GroupId>
         return invitation.Reject();
     }
     
-    public Result Cancel(Invitation invitation)
+    public Result CancelInvitation(Invitation invitation)
     {
         return invitation.Cancel();
     }

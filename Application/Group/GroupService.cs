@@ -122,7 +122,7 @@ public class GroupService(
             return Result<InvitationDto>.Failure(GroupError.UserIsNotInvitationOwner); 
         }
         
-        var result = group.Cancel(invitation);
+        var result = group.CancelInvitation(invitation);
         
         if (result.IsFailure)
         {

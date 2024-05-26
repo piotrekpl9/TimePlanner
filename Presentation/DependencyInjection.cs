@@ -4,6 +4,9 @@ using Application.Common.Services;
 using Infrastructure.Authentication;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -23,6 +26,15 @@ public static class DependencyInjection
         
         services.Configure<JwtSettings>(jwtSettings);
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>(provider => dateTimeProvider);
+        services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
+        // TODO Change Authorize to AllowAnonymous
+        // services.AddControllers(config =>
+        // {
+        //     var policy = new AuthorizationPolicyBuilder()
+        //         .RequireAuthenticatedUser()
+        //         .Build();
+        //     config.Filters.Add(new AuthorizeFilter(policy));
+        // });
         
         services.AddAuthentication(options =>
         {

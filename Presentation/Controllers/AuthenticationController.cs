@@ -9,8 +9,7 @@ namespace Presentation.Controllers;
 [ApiController]
 public class AuthenticationController(IAuthenticationService authenticationService) : Controller
 {
-    [HttpPost]
-    [Route("/signUp")]
+    [HttpPost("/sign-up")]
     public async Task<IResult> SignUp(
         [FromBody] RegisterRequest registerRequest,
         IValidator<RegisterRequest> validator)
@@ -24,8 +23,7 @@ public class AuthenticationController(IAuthenticationService authenticationServi
         return result.IsSuccess ? Results.Ok(result.Value) : Results.BadRequest(result.Error);
     }  
     
-    [HttpPost]
-    [Route("/signIn")]
+    [HttpPost("/sign-in")]
     public async Task<IResult> SignIn(
         [FromBody] LoginRequest loginRequest,
         IValidator<LoginRequest> validator)

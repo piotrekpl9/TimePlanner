@@ -15,10 +15,9 @@ namespace Presentation.Controllers;
 [ApiController]
 public class UserController(IUserService userService) : Controller
 {
-    [HttpPost]
+    [HttpPost("/update-password")]
     [Authorize]
-    [Route("/updatePassword")]
-    public async Task<IResult> SignIn(
+    public async Task<IResult> Update(
         [FromBody] PasswordUpdateRequest updateRequest,
         IValidator<PasswordUpdateRequest> validator)
     {   
@@ -29,15 +28,8 @@ public class UserController(IUserService userService) : Controller
         }
 
         var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
-        var targetUserId = new UserId(updateRequest.Guid);
-        var authorisationResult = userId.Equals(targetUserId);
-
-        if (!authorisationResult)
-        {
-            return Results.Forbid();
-        }
         
-        var result = await userService.UpdatePassword(targetUserId,updateRequest);
+        var result = await userService.UpdatePassword(userId, updateRequest);
         return result.IsSuccess ? Results.Ok() : Results.BadRequest(result.Error);
 
     }

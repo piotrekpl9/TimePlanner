@@ -5,11 +5,11 @@ namespace Domain.Task.Models.ValueObjects;
 public class TaskId : ValueObject
 {
 
-    private TaskId(Guid value)
+    public TaskId(Guid value)
     {
         Value = value;
     }
-    private Guid Value { get; }
+    public Guid Value { get; }
 
     public static TaskId Create()
     {
