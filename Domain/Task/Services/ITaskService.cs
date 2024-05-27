@@ -9,7 +9,6 @@ namespace Domain.Task.Services;
 
 public interface ITaskService
 { 
-    //Group can be obtained from user context so there is no need to add additional parameter
     Task<Result<TaskDto>> CreateForGroup(CreateTaskRequest createRequest, UserId userId);
     Task<Result<TaskDto>> Create(CreateTaskRequest createRequest, UserId userId);
     Task<Result<TaskDto>> Read(TaskId id);

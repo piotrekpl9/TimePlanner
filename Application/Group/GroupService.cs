@@ -6,6 +6,7 @@ using Domain.Group.Models.ValueObjects;
 using Domain.Group.Repositories;
 using Domain.Group.Services;
 using Domain.Shared;
+using Domain.Task.Repositories;
 using Domain.User.Errors;
 using Domain.User.Repositories;
 using Domain.User.ValueObjects;
@@ -16,6 +17,7 @@ using Domain.Group.Entities;
 public class GroupService( 
     IGroupRepository groupRepository,
     IUserRepository userRepository,
+    ITaskRepository taskRepository,
     IUnitOfWork unitOfWork) : IGroupService
 {
     public async Task<Result<Group>> CreateGroup(string name, UserId userId)
@@ -135,14 +137,31 @@ public class GroupService(
         }
 
         var result = group.AcceptInvitation(invitation);
-        //TODO Tasklist for group should be updated so every user is in assignedTasksList
-        
+      
         if (result.IsFailure)
         {
             return result;
         }
+
+        if (result.Value is null)
+        {
+            return Result.Failure(Error.NullSuccessValue);
+        }
         
         groupRepository.Update(group);
+        
+        var tasks = await taskRepository.ReadAllByGroupId(group.Id);
+        var user = await userRepository.GetById(result.Value.UserId);
+        if (user is null)
+        {
+            return Result.Failure(UserError.DoesntExists);
+        }
+        foreach (var task in tasks)
+        {
+            task.AssignUser(user);
+            taskRepository.Update(task);
+        }
+        
         await unitOfWork.SaveChangesAsync();
         
         return Result.Success();

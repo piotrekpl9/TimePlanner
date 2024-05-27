@@ -105,4 +105,10 @@ public sealed class Task : Entity<TaskId>
         DeletedAt = DateTime.UtcNow;
         return Result<Task>.Success(this);
     }
+
+    public Result AssignUser(User user)
+    {
+        _assignedUsers.Add(user);
+        return Result.Success();
+    }
 }
