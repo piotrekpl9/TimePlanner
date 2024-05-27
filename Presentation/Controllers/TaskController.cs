@@ -1,8 +1,8 @@
 using System.Security.Claims;
+using Domain.Group.Models.ValueObjects;
 using Domain.Task.Models;
-using Domain.Task.Models.Dtos;
 using Domain.Task.Models.ValueObjects;
-using Domain.Task.Serivces;
+using Domain.Task.Services;
 using Domain.User.ValueObjects;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -12,10 +12,9 @@ namespace Presentation.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class TasksController(ITaskService taskService) : Controller
+public class TaskController(ITaskService taskService, IAuthorizationService authorizationService) : Controller
 {
     [HttpPost("user")]
-    [Authorize]
     public async Task<IResult> CreateTask([FromBody] CreateTaskRequest createRequest)
     {   
         var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
@@ -26,7 +25,6 @@ public class TasksController(ITaskService taskService) : Controller
     }
     
     [HttpPost("group")]
-    [Authorize]
     public async Task<IResult> CreateTaskForGroup([FromBody] CreateTaskRequest createRequest)
     {   
         var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
@@ -38,56 +36,79 @@ public class TasksController(ITaskService taskService) : Controller
 
     
     [HttpGet("{id:guid}")]
-    [Authorize]
     public async Task<IResult> ReadTask(Guid id)
-    {   
-        var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
+    {
+        var taskId = new TaskId(id);
+        var taskAuthorizationResult = await authorizationService
+            .AuthorizeAsync(User, taskId,"TaskAssignedPolicy");
 
-        var result = await taskService.Read(new TaskId(id), userId);
+        if (!taskAuthorizationResult.Succeeded)
+        {
+            return Results.Forbid();
+        }
+        
+        var result = await taskService.Read(taskId);
         return result.IsSuccess ? Results.Ok(result.Value) : Results.BadRequest(result.Error);
 
     }
     
-    [HttpGet("user/{id:guid}")]
-    [Authorize]
-    public async Task<IResult> ReadUserTasks(Guid id)
+    [HttpGet("user/")]
+    public async Task<IResult> ReadUserTasks()
     {   
         var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
-
-        var result = await taskService.Read(new TaskId(id), userId);
+        var result = await taskService.ReadUserTasks(userId);
         return result.IsSuccess ? Results.Ok(result.Value) : Results.BadRequest(result.Error);
 
     }
     
     [HttpGet("group/{id:guid}")]
-    [Authorize]
     public async Task<IResult> ReadGroupTasks(Guid id)
     {   
+        var groupId = new GroupId(id);
+        
+        var memberAuthorizationResult = await authorizationService
+            .AuthorizeAsync(User, groupId,"GroupAccessPolicy");
+        
+        if (!memberAuthorizationResult.Succeeded)
+        {
+            return Results.Forbid();
+        }
         var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
-
-        var result = await taskService.Read(new TaskId(id), userId);
+        var result = await taskService.ReadGroupTasks(groupId);
         return result.IsSuccess ? Results.Ok(result.Value) : Results.BadRequest(result.Error);
     }
     
     [HttpPut("{id:guid}")]
-    [Authorize]
     public async Task<IResult> UpdateTask(Guid id, [FromBody] UpdateTaskRequest updateTaskRequest)
     {   
-        var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
+        var taskId = new TaskId(id);
+        var taskAuthorizationResult = await authorizationService
+            .AuthorizeAsync(User, taskId,"TaskAssignedPolicy");
 
-        var result = await taskService.Update(new TaskId(id), updateTaskRequest, userId);
+        if (!taskAuthorizationResult.Succeeded)
+        {
+            return Results.Forbid();
+        }
+        
+        var result = await taskService.Update(new TaskId(id), updateTaskRequest);
         return result.IsSuccess ? Results.Ok(result.Value) : Results.BadRequest(result.Error);
 
     }
     
     [HttpDelete("{id:guid}")]
-    [Authorize]
     public async Task<IResult> DeleteTask(Guid id)
     {   
-        var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
+        var taskId = new TaskId(id);
+        var taskAuthorizationResult = await authorizationService
+            .AuthorizeAsync(User, taskId,"TaskAssignedPolicy");
 
-        var result = await taskService.Read(new TaskId(id), userId);
-        return result.IsSuccess ? Results.Ok(result.Value) : Results.BadRequest(result.Error);
+        if (!taskAuthorizationResult.Succeeded)
+        {
+            return Results.Forbid();
+        }
+        
+        var result = await taskService.Delete(new TaskId(id));
+        return result ? Results.Ok() : Results.BadRequest();
 
     }
 }

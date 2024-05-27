@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Application.Authentication;
 using Application.Authentication.Model;
 using Domain.Shared;
+using Domain.User.Models;
 using Domain.User.Services;
 using Domain.User.ValueObjects;
 using FluentValidation;
@@ -16,7 +17,6 @@ namespace Presentation.Controllers;
 public class UserController(IUserService userService) : Controller
 {
     [HttpPost("/update-password")]
-    [Authorize]
     public async Task<IResult> Update(
         [FromBody] PasswordUpdateRequest updateRequest,
         IValidator<PasswordUpdateRequest> validator)

@@ -24,12 +24,12 @@ public class TaskRepository(IApplicationDbContext dbContext, IUnitOfWork unitOfW
 
     public async Task<List<Task>> ReadAllByUserId(UserId id)
     {
-        return await dbContext.Tasks.Where(task => task.AssignedUsers.Select(user => user.Id).Contains(id)).ToListAsync();
+        return await dbContext.Tasks.Include(task => task.AssignedUsers).Where(task => task.AssignedUsers.Select(user => user.Id).Contains(id)).ToListAsync();
     }
 
     public async Task<List<Task>> ReadAllByGroupId(GroupId id)
     {
-        return await dbContext.Tasks.Where(task => task.GroupId != null && task.GroupId.Equals(id)).ToListAsync();
+        return await dbContext.Tasks.Include(task => task.AssignedUsers).Where(task => task.GroupId != null && task.GroupId.Equals(id)).ToListAsync();
     }
 
     public void Update(Task newTask)

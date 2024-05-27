@@ -1,5 +1,6 @@
 using Application.Common.Data;
 using Domain.Group.Errors;
+using Domain.Group.Models.ValueObjects;
 using Domain.Group.Repositories;
 using Domain.Group.Services;
 using Domain.Shared;
@@ -7,7 +8,7 @@ using Domain.Task.Models;
 using Domain.Task.Models.Dtos;
 using Domain.Task.Models.ValueObjects;
 using Domain.Task.Repositories;
-using Domain.Task.Serivces;
+using Domain.Task.Services;
 using Domain.Task.TaskErrors;
 using Domain.User.Errors;
 using Domain.User.Models.Dtos;
@@ -65,17 +66,12 @@ public class TaskService(ITaskRepository taskRepository, IGroupRepository groupR
         return Result<TaskDto>.Success(taskDto);
     }
 
-    public async Task<Result<TaskDto>> Read(TaskId id, UserId userId)
+    public async Task<Result<TaskDto>> Read(TaskId id)
     {
         var task = await taskRepository.Read(id);
         if (task is null)
         {
             return Result<TaskDto>.Failure(TaskError.TaskNotFound);
-        }
-        
-        if(!task.AssignedUsers.Any(user => user.Id.Equals(userId)))
-        {
-            return Result<TaskDto>.Failure(TaskError.TaskIsNotAssignedToUser);
         }
 
         var userDto = new UserDto(task.Creator.Name, task.Creator.Surname, task.Creator.Email, task.Creator.CreatedAt);
@@ -84,17 +80,29 @@ public class TaskService(ITaskRepository taskRepository, IGroupRepository groupR
         return Result<TaskDto>.Success(taskDto);
     }
 
-    public async Task<Result<TaskDto>> Update(TaskId id, UpdateTaskRequest newTask, UserId userId)
+    public async Task<Result<List<TaskDto>>> ReadUserTasks(UserId userId)
+    {
+        var tasks = await taskRepository.ReadAllByUserId(userId);
+        List<TaskDto> taskDtos = [];
+        taskDtos.AddRange(from task in tasks let userDto = new UserDto(task.Creator.Name, task.Creator.Surname, task.Creator.Email, task.Creator.CreatedAt) select new TaskDto(task.Name, task.Notes, task.Status.ToString(), userDto, task.GroupId?.Value, task.PlannedAt, task.CreatedAt));
+        return Result<List<TaskDto>>.Success(taskDtos);
+    }
+
+    public async Task<Result<List<TaskDto>>> ReadGroupTasks(GroupId groupId)
+    {
+        var tasks = await taskRepository.ReadAllByGroupId(groupId);
+        
+        List<TaskDto> taskDtos = [];
+        taskDtos.AddRange(from task in tasks let userDto = new UserDto(task.Creator.Name, task.Creator.Surname, task.Creator.Email, task.Creator.CreatedAt) select new TaskDto(task.Name, task.Notes, task.Status.ToString(), userDto, task.GroupId?.Value, task.PlannedAt, task.CreatedAt));
+        return Result<List<TaskDto>>.Success(taskDtos);
+    }
+
+    public async Task<Result<TaskDto>> Update(TaskId id, UpdateTaskRequest newTask)
     {
         var task = await taskRepository.Read(id);
         if (task is null)
         {
             return Result<TaskDto>.Failure(TaskError.TaskNotFound);
-        }
-        
-        if(!task.AssignedUsers.Any(user => user.Id.Equals(userId)))
-        {
-            return Result<TaskDto>.Failure(TaskError.TaskIsNotAssignedToUser);
         }
         
         task.Update(newTask.Name, newTask.Notes, newTask.Status, newTask.PlannedAt);
@@ -106,15 +114,10 @@ public class TaskService(ITaskRepository taskRepository, IGroupRepository groupR
         return Result<TaskDto>.Success(taskDto);
     }
 
-    public async Task<bool> Delete(TaskId id, UserId userId)
+    public async Task<bool> Delete(TaskId id)
     {
         var task = await taskRepository.Read(id);
         if (task is null)
-        {
-            return false;
-        }
-        
-        if(!task.AssignedUsers.Any(user => user.Id.Equals(userId)))
         {
             return false;
         }

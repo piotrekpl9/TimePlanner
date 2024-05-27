@@ -11,77 +11,114 @@ namespace Presentation.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class GroupController(IGroupService groupService) : Controller
+public class GroupController(IGroupService groupService, IAuthorizationService authorizationService) : Controller
 {
+    
     [HttpPost("create")]
-    [Authorize]
     public async Task<IResult> CreateGroup([FromBody] CreateGroupRequest createRequest)
     {   
         var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
-
+     
         var result = await groupService.CreateGroup(createRequest.Name, userId);
         return result.IsSuccess ? Results.Ok() : Results.BadRequest(result.Error);
 
     }
     
-    [HttpPost("invitations/create")]
-    [Authorize]
-    public async Task<IResult> InviteUser([FromBody] InviteUserRequest inviteUserRequest)
-    { 
+    [HttpPost("{groupGuid:guid}/invitations/create")]
+    public async Task<IResult> InviteUser(Guid groupGuid, [FromBody] InviteUserRequest inviteUserRequest)
+    {
         var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
+        var groupId = new GroupId(groupGuid);
+        
+        var memberAuthorizationResult = await authorizationService
+            .AuthorizeAsync(User, groupId,"GroupAccessPolicy");
 
-        var result = await groupService.InviteUserByEmail(inviteUserRequest.Email, new GroupId(inviteUserRequest.GroupId), userId);
+        if (!memberAuthorizationResult.Succeeded)
+        {
+            return Results.Forbid();
+        }
+        
+        var result = await groupService.InviteUserByEmail(inviteUserRequest.Email, groupId, userId);
         return result.IsSuccess ? Results.Ok() : Results.BadRequest(result.Error);
     }
      
-    [HttpPost("invitations/{id:guid}/accept")]
-    [Authorize]
-    public async Task<IResult> AcceptInvitation(Guid id)
+    [HttpPost("{groupGuid:guid}/invitations/{id:guid}/accept")]
+    public async Task<IResult> AcceptInvitation(Guid groupGuid, Guid id)
     { 
-        var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
-      
-        var result = await groupService.AcceptInvitation(new InvitationId(id), userId);
+        var memberAuthorizationResult = await authorizationService
+            .AuthorizeAsync(User, new GroupId(groupGuid),"GroupAccessPolicy");
+
+        var invitationTargetAuthorizationResult = await authorizationService
+            .AuthorizeAsync(User, new InvitationId(id),"InvitationOperationPolicy");
+        
+        if (!memberAuthorizationResult.Succeeded || !invitationTargetAuthorizationResult.Succeeded)
+        {
+            return Results.Forbid();
+        }
+        
+        var result = await groupService.AcceptInvitation(new InvitationId(id));
         return result.IsSuccess ? Results.Ok() : Results.BadRequest(result.Error);
     }
     
     
-    [HttpPost("invitations/{id:guid}/reject")]
-    [Authorize]
-    public async Task<IResult> RejectInvitation(Guid id)
+    [HttpPost("{groupGuid:guid}/invitations/{id:guid}/reject")]
+    public async Task<IResult> RejectInvitation(Guid groupGuid, Guid id)
     { 
-        var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
-      
-        var result = await groupService.RejectInvitation(new InvitationId(id), userId);
+        var memberAuthorizationResult = await authorizationService
+            .AuthorizeAsync(User, new GroupId(groupGuid),"GroupAccessPolicy");
+
+        var invitationTargetAuthorizationResult = await authorizationService
+            .AuthorizeAsync(User, new InvitationId(id),"InvitationOperationPolicy");
+        
+        if (!memberAuthorizationResult.Succeeded || !invitationTargetAuthorizationResult.Succeeded)
+        {
+            return Results.Forbid();
+        }
+        
+        var result = await groupService.RejectInvitation(new InvitationId(id));
         return result.IsSuccess ? Results.Ok() : Results.BadRequest(result.Error);
     }
     
-    [HttpPost("invitations/{id:guid}/cancel")]
-    [Authorize]
-    public async Task<IResult> CancelInvitation(Guid id)
+    [HttpPost("{groupGuid:guid}/invitations/{id:guid}/cancel")]
+    public async Task<IResult> CancelInvitation(Guid groupGuid, Guid id)
     { 
-        var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
-      
-        var result = await groupService.CancelInvitation(new InvitationId(id), userId);
+        var memberAuthorizationResult = await authorizationService
+            .AuthorizeAsync(User, new GroupId(groupGuid),"GroupAccessPolicy");
+        var invitationCancelAuthorizationResult = await authorizationService
+            .AuthorizeAsync(User, new GroupId(groupGuid),"InvitationCancelPolicy");
+
+        if (!memberAuthorizationResult.Succeeded || !invitationCancelAuthorizationResult.Succeeded)
+        {
+            return Results.Forbid();
+        }
+        
+        var result = await groupService.CancelInvitation(new InvitationId(id));
         return result.IsSuccess ? Results.Ok() : Results.BadRequest(result.Error);
     }
     
-    [HttpPost("leave")]
-    [Authorize]
-    public async Task<IResult> LeaveGroup([FromBody] LeaveGroupRequest leaveGroupRequest)
+    [HttpPost("{groupGuid:guid}/leave")]
+    public async Task<IResult> LeaveGroup(Guid groupGuid)
     { 
+        var memberAuthorizationResult = await authorizationService
+            .AuthorizeAsync(User, new GroupId(groupGuid),"GroupAccessPolicy");
+        
+        if (!memberAuthorizationResult.Succeeded )
+        {
+            return Results.Forbid();
+        }
+        
         var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
       
-        var result = await groupService.Leave(userId, new GroupId(leaveGroupRequest.GroupGuid));
+        var result = await groupService.Leave(userId, new GroupId(groupGuid));
         return result.IsSuccess ? Results.Ok() : Results.BadRequest(result.Error);
     }
     
-    [HttpDelete("{id:guid}/delete")]
-    [Authorize]
-    public async Task<IResult> DeleteGroup(Guid id)
+    [HttpDelete("{groupGuid:guid}/delete")]
+    public async Task<IResult> DeleteGroup(Guid groupGuid)
     { 
         var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
       
-        var result = await groupService.DeleteGroup(new GroupId(id), userId);
+        var result = await groupService.DeleteGroup(new GroupId(groupGuid), userId);
         return result.IsSuccess ? Results.Ok(result.Value) : Results.BadRequest(result.Error);
     }
 }

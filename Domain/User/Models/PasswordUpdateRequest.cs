@@ -1,4 +1,4 @@
-namespace Application.Authentication.Model;
+namespace Domain.User.Models;
 
 public class PasswordUpdateRequest(string oldPassword, string newPassword)
 {

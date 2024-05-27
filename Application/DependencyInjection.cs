@@ -4,7 +4,7 @@ using Application.Group;
 using Application.Task;
 using Application.User;
 using Domain.Group.Services;
-using Domain.Task.Serivces;
+using Domain.Task.Services;
 using Domain.User.Services;
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
@@ -21,6 +21,7 @@ public static class DependencyInjection
         services.AddScoped<IGroupService,GroupService>();
         services.AddScoped<ITaskService,TaskService>();
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
+        
         return services;
     }
 }

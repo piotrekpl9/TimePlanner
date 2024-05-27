@@ -2,6 +2,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using Application.Common.Services;
 using Infrastructure.Authentication;
+using Infrastructure.Authorization;
+using Infrastructure.Authorization.Group;
+using Infrastructure.Authorization.Task;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -23,19 +26,28 @@ public static class DependencyInjection
         var dateTimeProvider = new DateTimeProvider();
         
         services.AddEndpointsApiExplorer();
-        
         services.Configure<JwtSettings>(jwtSettings);
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>(provider => dateTimeProvider);
         services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
-        // TODO Change Authorize to AllowAnonymous
-        // services.AddControllers(config =>
-        // {
-        //     var policy = new AuthorizationPolicyBuilder()
-        //         .RequireAuthenticatedUser()
-        //         .Build();
-        //     config.Filters.Add(new AuthorizeFilter(policy));
-        // });
+     
+        services.AddControllers(config =>
+        {
+            var policy = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .Build();
+            config.Filters.Add(new AuthorizeFilter(policy));
+        });
         
+        services.AddAuthorizationBuilder()
+                    .AddPolicy("GroupAccessPolicy", policy =>
+                policy.Requirements.Add(new IsGroupMemberRequirement()))
+                    .AddPolicy("InvitationOperationPolicy", policy =>
+                policy.Requirements.Add(new IsInvitationTargetRequirement()))
+                    .AddPolicy("InvitationCancelPolicy", policy =>
+                policy.Requirements.Add(new IsInvitationCreatorRequirement()))
+                    .AddPolicy("TaskAssignedPolicy", policy =>
+                policy.Requirements.Add(new IsAssignedToTaskAuthorizationRequirement()));
+
         services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

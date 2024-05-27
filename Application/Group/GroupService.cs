@@ -40,20 +40,10 @@ public class GroupService(
         return Result<Group>.Success(group);
     }
 
-    public async Task<Result<Group>> ReadGroup(GroupId id, UserId userId)
+    public async Task<Result<Group>> ReadGroup(GroupId id)
     {
         var group = await groupRepository.Read(id);
-        if (group is null)
-        {
-            return Result<Group>.Failure(GroupError.GroupNotFound);
-        }
-
-        if (!group.Members.Any(member => member.UserId.Equals(userId)))
-        {
-            return Result<Group>.Failure(GroupError.UserIsNotMember);
-        }
-
-        return Result<Group>.Success(group);
+        return group is null ? Result<Group>.Failure(GroupError.GroupNotFound) : Result<Group>.Success(group);
     }
 
     public async Task<Result<InvitationDto>> InviteUserByEmail(string email, GroupId groupId,  UserId invitingUserId)
@@ -70,7 +60,7 @@ public class GroupService(
             return Result<InvitationDto>.Failure(GroupError.UserInvitingItself);
         }
         
-        var groupResult = await ReadGroup(groupId,invitingUserId);
+        var groupResult = await ReadGroup(groupId);
         if (groupResult.IsFailure)
         {
             return Result<InvitationDto>.Failure(groupResult.Error);
@@ -101,7 +91,7 @@ public class GroupService(
         return Result<InvitationDto>.Success(invitationDto);
     }
 
-    public async Task<Result> CancelInvitation(InvitationId id, UserId userId)
+    public async Task<Result> CancelInvitation(InvitationId id)
     {
         var group = await groupRepository.ReadGroupByInvitationId(id);
         
@@ -114,12 +104,6 @@ public class GroupService(
         if (invitation is null)
         {
             return Result<InvitationDto>.Failure(GroupError.InvitationNotFound); 
-        }
-        
-       
-        if (!invitation.Creator.UserId.Equals(userId))
-        {
-            return Result<InvitationDto>.Failure(GroupError.UserIsNotInvitationOwner); 
         }
         
         var result = group.CancelInvitation(invitation);
@@ -135,7 +119,7 @@ public class GroupService(
         return Result.Success();
     }
 
-    public async Task<Result> AcceptInvitation(InvitationId id, UserId userId)
+    public async Task<Result> AcceptInvitation(InvitationId id)
     {
         var group = await groupRepository.ReadGroupByInvitationId(id);
         
@@ -150,12 +134,9 @@ public class GroupService(
             return Result<InvitationDto>.Failure(GroupError.InvitationNotFound); 
         }
 
-        if (!invitation.UserId.Equals(userId))
-        {
-            return Result<InvitationDto>.Failure(GroupError.UserIsNotInvitationTarget);
-        }
-        
         var result = group.AcceptInvitation(invitation);
+        //TODO Tasklist for group should be updated so every user is in assignedTasksList
+        
         if (result.IsFailure)
         {
             return result;
@@ -167,7 +148,7 @@ public class GroupService(
         return Result.Success();
     }
 
-    public async Task<Result> RejectInvitation(InvitationId id, UserId userId)
+    public async Task<Result> RejectInvitation(InvitationId id)
     {
         var group = await groupRepository.ReadGroupByInvitationId(id);
         
@@ -180,11 +161,6 @@ public class GroupService(
         if (invitation is null)
         {
             return Result<InvitationDto>.Failure(GroupError.InvitationNotFound); 
-        }
-        
-        if (!invitation.UserId.Equals(userId))
-        {
-            return Result<InvitationDto>.Failure(GroupError.UserIsNotInvitationTarget);
         }
         
         var result = group.RejectInvitation(invitation);
