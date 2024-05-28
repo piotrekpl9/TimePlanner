@@ -26,7 +26,7 @@ public class TaskService(ITaskRepository taskRepository, IGroupRepository groupR
         var creator = await userRepository.GetById(userId);
         if (creator is null)
         {
-            return Result<TaskDto>.Failure(UserError.AlreadyExists);
+            return Result<TaskDto>.Failure(UserError.DoesntExists);
         }
 
         var group = await groupRepository.ReadGroupByUserId(userId);
