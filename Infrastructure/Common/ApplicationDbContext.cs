@@ -23,4 +23,5 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
     public DbSet<User> Users { get; set; }
     public DbSet<Group> Groups { get; set; }
+    public DbSet<Domain.Task.Entities.Task> Tasks { get; set; }
 }

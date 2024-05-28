@@ -1,6 +1,7 @@
 using Application.Authentication;
 using Application.Authentication.Model;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,8 +10,8 @@ namespace Presentation.Controllers;
 [ApiController]
 public class AuthenticationController(IAuthenticationService authenticationService) : Controller
 {
-    [HttpPost]
-    [Route("/signUp")]
+    [HttpPost("/sign-up")]
+    [AllowAnonymous]
     public async Task<IResult> SignUp(
         [FromBody] RegisterRequest registerRequest,
         IValidator<RegisterRequest> validator)
@@ -24,8 +25,8 @@ public class AuthenticationController(IAuthenticationService authenticationServi
         return result.IsSuccess ? Results.Ok(result.Value) : Results.BadRequest(result.Error);
     }  
     
-    [HttpPost]
-    [Route("/signIn")]
+    [HttpPost("/sign-in")]
+    [AllowAnonymous]
     public async Task<IResult> SignIn(
         [FromBody] LoginRequest loginRequest,
         IValidator<LoginRequest> validator)

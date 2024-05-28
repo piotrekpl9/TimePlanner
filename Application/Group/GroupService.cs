@@ -6,6 +6,7 @@ using Domain.Group.Models.ValueObjects;
 using Domain.Group.Repositories;
 using Domain.Group.Services;
 using Domain.Shared;
+using Domain.Task.Repositories;
 using Domain.User.Errors;
 using Domain.User.Repositories;
 using Domain.User.ValueObjects;
@@ -16,6 +17,7 @@ using Domain.Group.Entities;
 public class GroupService( 
     IGroupRepository groupRepository,
     IUserRepository userRepository,
+    ITaskRepository taskRepository,
     IUnitOfWork unitOfWork) : IGroupService
 {
     public async Task<Result<Group>> CreateGroup(string name, UserId userId)
@@ -40,20 +42,10 @@ public class GroupService(
         return Result<Group>.Success(group);
     }
 
-    public async Task<Result<Group>> ReadGroup(GroupId id, UserId userId)
+    public async Task<Result<Group>> ReadGroup(GroupId id)
     {
         var group = await groupRepository.Read(id);
-        if (group is null)
-        {
-            return Result<Group>.Failure(GroupError.GroupNotFound);
-        }
-
-        if (!group.Members.Any(member => member.UserId.Equals(userId)))
-        {
-            return Result<Group>.Failure(GroupError.UserIsNotMember);
-        }
-
-        return Result<Group>.Success(group);
+        return group is null ? Result<Group>.Failure(GroupError.GroupNotFound) : Result<Group>.Success(group);
     }
 
     public async Task<Result<InvitationDto>> InviteUserByEmail(string email, GroupId groupId,  UserId invitingUserId)
@@ -70,7 +62,7 @@ public class GroupService(
             return Result<InvitationDto>.Failure(GroupError.UserInvitingItself);
         }
         
-        var groupResult = await ReadGroup(groupId,invitingUserId);
+        var groupResult = await ReadGroup(groupId);
         if (groupResult.IsFailure)
         {
             return Result<InvitationDto>.Failure(groupResult.Error);
@@ -101,7 +93,7 @@ public class GroupService(
         return Result<InvitationDto>.Success(invitationDto);
     }
 
-    public async Task<Result> CancelInvitation(InvitationId id, UserId userId)
+    public async Task<Result> CancelInvitation(InvitationId id)
     {
         var group = await groupRepository.ReadGroupByInvitationId(id);
         
@@ -116,13 +108,7 @@ public class GroupService(
             return Result<InvitationDto>.Failure(GroupError.InvitationNotFound); 
         }
         
-       
-        if (!invitation.Creator.UserId.Equals(userId))
-        {
-            return Result<InvitationDto>.Failure(GroupError.UserIsNotInvitationOwner); 
-        }
-        
-        var result = group.Cancel(invitation);
+        var result = group.CancelInvitation(invitation);
         
         if (result.IsFailure)
         {
@@ -135,7 +121,7 @@ public class GroupService(
         return Result.Success();
     }
 
-    public async Task<Result> AcceptInvitation(InvitationId id, UserId userId)
+    public async Task<Result> AcceptInvitation(InvitationId id)
     {
         var group = await groupRepository.ReadGroupByInvitationId(id);
         
@@ -150,24 +136,38 @@ public class GroupService(
             return Result<InvitationDto>.Failure(GroupError.InvitationNotFound); 
         }
 
-        if (!invitation.UserId.Equals(userId))
-        {
-            return Result<InvitationDto>.Failure(GroupError.UserIsNotInvitationTarget);
-        }
-        
         var result = group.AcceptInvitation(invitation);
+      
         if (result.IsFailure)
         {
             return result;
         }
+
+        if (result.Value is null)
+        {
+            return Result.Failure(Error.NullSuccessValue);
+        }
         
         groupRepository.Update(group);
+        
+        var tasks = await taskRepository.ReadAllByGroupId(group.Id);
+        var user = await userRepository.GetById(result.Value.UserId);
+        if (user is null)
+        {
+            return Result.Failure(UserError.DoesntExists);
+        }
+        foreach (var task in tasks)
+        {
+            task.AssignUser(user);
+            taskRepository.Update(task);
+        }
+        
         await unitOfWork.SaveChangesAsync();
         
         return Result.Success();
     }
 
-    public async Task<Result> RejectInvitation(InvitationId id, UserId userId)
+    public async Task<Result> RejectInvitation(InvitationId id)
     {
         var group = await groupRepository.ReadGroupByInvitationId(id);
         
@@ -180,11 +180,6 @@ public class GroupService(
         if (invitation is null)
         {
             return Result<InvitationDto>.Failure(GroupError.InvitationNotFound); 
-        }
-        
-        if (!invitation.UserId.Equals(userId))
-        {
-            return Result<InvitationDto>.Failure(GroupError.UserIsNotInvitationTarget);
         }
         
         var result = group.RejectInvitation(invitation);

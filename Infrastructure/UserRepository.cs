@@ -22,6 +22,11 @@ public class UserRepository(IApplicationDbContext dbContext, IUnitOfWork unitOfW
         return dbContext.Users.SingleOrDefaultAsync(user => user.Id.Equals(id));
     }
 
+    public async Task<List<User>> GetByIdList(List<UserId> idList)
+    {
+        return await dbContext.Users.Where(user => idList.Contains(user.Id)).ToListAsync();
+    }
+    
     public Task<User?> GetByEmail(string email)
     {
         return dbContext.Users.SingleOrDefaultAsync(user => user.Email == email);

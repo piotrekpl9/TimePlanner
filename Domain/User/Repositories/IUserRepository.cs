@@ -9,7 +9,8 @@ public interface IUserRepository
 {
     Task Add(User user);
     Task<User?> GetById(UserId id);
-    Task<User?> GetByEmail(String email);
+    Task<List<User>> GetByIdList(List<UserId> idList);
+    Task<User?> GetByEmail(string email);
     Task<List<User>> GetAllByGroupId(GroupId groupId);
     void Update(User user);
     Task<bool> Delete(UserId id);

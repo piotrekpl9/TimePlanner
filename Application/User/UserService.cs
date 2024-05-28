@@ -2,6 +2,7 @@ using Application.Authentication.Model;
 using Application.Common.Data;
 using Domain.Shared;
 using Domain.User.Errors;
+using Domain.User.Models;
 using Domain.User.Models.Dtos;
 using Domain.User.Repositories;
 using Domain.User.Services;
@@ -49,8 +50,19 @@ public class UserService(
         if (user is null)
         {
             return Result.Failure(UserError.DoesntExists);
+        } 
+        var oldPasswordCheck = passwordHasher.VerifyHashedPassword(null, user.Password, passwordUpdateRequest.OldPassword) ==
+                 PasswordVerificationResult.Success;
+        if (!oldPasswordCheck)
+        {
+            return Result.Failure(UserError.BadOldPassword);
         }
-
+        var newPasswordCheck =  passwordHasher.VerifyHashedPassword(null, user.Password, passwordUpdateRequest.NewPassword) !=
+                                PasswordVerificationResult.Success;
+        if (!newPasswordCheck)
+        {
+            return Result.Failure(UserError.PasswordsIdentical);
+        }
         user.Password = passwordHasher.HashPassword(null, passwordUpdateRequest.NewPassword);
         userRepository.Update(user);
 

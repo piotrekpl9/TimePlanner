@@ -1,8 +1,8 @@
-namespace Domain.Task.Models.Dtos;
+namespace Domain.Task.Models;
 
-public class CreateTaskDto
+public class CreateTaskRequest
 {
-    public CreateTaskDto(string name, string notes, DateTime plannedAt)
+    public CreateTaskRequest(string name, string notes, DateTime plannedAt)
     {
         Name = name;
         Notes = notes;

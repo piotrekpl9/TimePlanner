@@ -1,5 +1,5 @@
-using Application.Authentication.Model;
 using Domain.Shared;
+using Domain.User.Models;
 using Domain.User.Models.Dtos;
 using Domain.User.ValueObjects;
 
