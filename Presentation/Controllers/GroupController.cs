@@ -113,6 +113,65 @@ public class GroupController(IGroupService groupService, IAuthorizationService a
         return result.IsSuccess ? Results.Ok() : Results.BadRequest(result.Error);
     }
     
+    [HttpGet("{groupGuid:guid}/")]
+    public async Task<IResult> GetGroup(Guid groupGuid)
+    { 
+        var memberAuthorizationResult = await authorizationService
+            .AuthorizeAsync(User, new GroupId(groupGuid),"GroupAccessPolicy");
+        
+        if (!memberAuthorizationResult.Succeeded )
+        {
+            return Results.Forbid();
+        }
+        
+        var result = await groupService.ReadGroup(new GroupId(groupGuid));
+        return result.IsSuccess ? Results.Ok(result.Value) : Results.BadRequest(result.Error);
+    }
+    
+    [HttpGet("{groupGuid:guid}/invitations")]
+    public async Task<IResult> GetGroupInvitations(Guid groupGuid)
+    { 
+        var memberAuthorizationResult = await authorizationService
+            .AuthorizeAsync(User, new GroupId(groupGuid),"GroupAccessPolicy");
+        
+        if (!memberAuthorizationResult.Succeeded )
+        {
+            return Results.Forbid();
+        }
+        
+        var result = await groupService.ReadGroup(new GroupId(groupGuid));
+        return result.IsSuccess ? Results.Ok(result.Value?.Invitations ?? []) : Results.BadRequest(result.Error);
+    }
+    
+    [HttpGet("{groupGuid:guid}/members")]
+    public async Task<IResult> GetGroupMembers(Guid groupGuid)
+    { 
+        var memberAuthorizationResult = await authorizationService
+            .AuthorizeAsync(User, new GroupId(groupGuid),"GroupAccessPolicy");
+        
+        if (!memberAuthorizationResult.Succeeded )
+        {
+            return Results.Forbid();
+        }
+        
+        var result = await groupService.ReadGroup(new GroupId(groupGuid));
+        return result.IsSuccess ? Results.Ok(result.Value?.Members ?? []) : Results.BadRequest(result.Error);
+    }
+    
+    [HttpDelete("{groupGuid:guid}/members/{memberId:guid}")]
+    public async Task<IResult> GetGroupMembers(Guid groupGuid,Guid memberId)
+    { 
+        var memberAuthorizationResult = await authorizationService
+            .AuthorizeAsync(User, new GroupId(groupGuid),"GroupAccessPolicy");
+        
+        if (!memberAuthorizationResult.Succeeded )
+        {
+            return Results.Forbid();
+        }
+        var result = await groupService.DeleteMember(new GroupId(groupGuid),new MemberId(memberId));
+        return result.IsSuccess ? Results.Ok() : Results.BadRequest(result.Error);
+    }
+    
     [HttpDelete("{groupGuid:guid}/delete")]
     public async Task<IResult> DeleteGroup(Guid groupGuid)
     { 

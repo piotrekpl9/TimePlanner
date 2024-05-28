@@ -221,18 +221,14 @@ public class GroupService(
         return Result<Group>.Success(group);
     }
 
-    public async Task<Result> DeleteMember(MemberId id, UserId userId)
+    public async Task<Result> DeleteMember(GroupId groupId, MemberId id)
     {
-        var group = await groupRepository.ReadGroupByMemberId(id);
+        var group = await groupRepository.Read(groupId);
         if (group is null)
         {
             return Result.Failure(GroupError.GroupNotFound);
         }
-        var user = group.Members.FirstOrDefault(member => member.UserId.Equals(userId));
-        if (user is not null && user.Role is not Role.Admin)
-        {
-            return Result<Group>.Failure(GroupError.UserIsNotGroupOwner);
-        }
+        
         var result = group.RemoveMember(id);
 
         return result;
