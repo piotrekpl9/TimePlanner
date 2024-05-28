@@ -16,6 +16,6 @@ public interface IGroupService
     public Task<Result> RejectInvitation(InvitationId id);
 
     public Task<Result<Group>> DeleteGroup(GroupId id, UserId userId);
-    public Task<Result> DeleteMember(MemberId id, UserId userId);
+    public Task<Result> DeleteMember(GroupId groupId, MemberId id);
     public Task<Result> Leave(UserId userId, GroupId group);
 }
