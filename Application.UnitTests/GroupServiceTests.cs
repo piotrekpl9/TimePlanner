@@ -1,6 +1,7 @@
 
 using Application.Common.Data;
 using Application.Group;
+using AutoMapper;
 using Domain.Group.Errors;
 using Domain.Group.Models.Dtos;
 using Domain.Group.Repositories;
@@ -14,6 +15,16 @@ using Task = System.Threading.Tasks.Task;
 using User = Domain.User.Entities.User;
 public class GroupServiceTests
 {
+    IMapper _mapper;
+    MapperConfiguration _config;
+
+    public GroupServiceTests()
+    {
+        _config = new MapperConfiguration(expression => expression.AddProfiles([new AutoMapperProfile()]));
+
+        _mapper = _config.CreateMapper();
+    }
+    
     [Theory]
     [ClassData(typeof(GroupCreateUserAlreadyInGroup))]
     public async Task CreateGroup_Should_ReturnFailure_When_UserAlreadyInOtherGroup(User user)
@@ -27,7 +38,7 @@ public class GroupServiceTests
         var taskRepoMock = new Mock<ITaskRepository>();
         var unitOfWorkMock = new Mock<IUnitOfWork>();
         
-        var groupService = new GroupService(groupRepoMock.Object,userRepoMock.Object, taskRepoMock.Object, unitOfWorkMock.Object);
+        var groupService = new GroupService(groupRepoMock.Object,userRepoMock.Object, taskRepoMock.Object, unitOfWorkMock.Object, _mapper);
 
         var result = await groupService.CreateGroup("Kowalscy", user.Id);
         
@@ -49,7 +60,7 @@ public class GroupServiceTests
         var taskRepoMock = new Mock<ITaskRepository>();
         var unitOfWorkMock = new Mock<IUnitOfWork>();
         
-        var groupService = new GroupService(groupRepoMock.Object,userRepoMock.Object, taskRepoMock.Object, unitOfWorkMock.Object);
+        var groupService = new GroupService(groupRepoMock.Object,userRepoMock.Object, taskRepoMock.Object, unitOfWorkMock.Object, _mapper);
 
         var result = await groupService.InviteUserByEmail(user.Email,group.Id, user.Id);
         

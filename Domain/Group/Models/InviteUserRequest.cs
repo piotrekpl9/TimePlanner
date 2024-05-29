@@ -2,8 +2,7 @@ namespace Domain.Group.Models;
 
 public class InviteUserRequest
 {
-    
-    public InviteUserRequest(Guid groupId,  string email)
+    public InviteUserRequest(string email)
     {
         Email = email;
     }

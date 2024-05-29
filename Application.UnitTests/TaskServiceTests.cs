@@ -1,6 +1,7 @@
 using Application.Common.Data;
 using Application.Group;
 using Application.Task;
+using AutoMapper;
 using Domain.Group.Repositories;
 using Domain.Shared;
 using Domain.Task.Models;
@@ -14,6 +15,17 @@ using Group = Domain.Group.Entities.Group;
 
 public class TaskServiceTests
 {
+    
+    IMapper _mapper;
+    MapperConfiguration _config;
+
+    public TaskServiceTests()
+    {
+        _config = new MapperConfiguration(expression => expression.AddProfiles([new AutoMapperProfile()]));
+ 
+        _mapper = _config.CreateMapper();
+    }
+    
     [Theory]
     [ClassData(typeof(TaskOperationData))]
     public async System.Threading.Tasks.Task CreateTask_Should_ReturnSuccess(List<User> users, Group group)
@@ -30,7 +42,7 @@ public class TaskServiceTests
         taskRepoMock.Setup(repo => repo.Add(It.IsAny<Domain.Task.Entities.Task>()))
             .Callback<Domain.Task.Entities.Task>(task => createdTask = task);
 
-        var taskService = new TaskService(taskRepoMock.Object, groupRepoMock.Object, userRepoMock.Object, unitOfWorkMock.Object);
+        var taskService = new TaskService(taskRepoMock.Object, groupRepoMock.Object, userRepoMock.Object, unitOfWorkMock.Object, _mapper);
         var createTaskRequest = new CreateTaskRequest("test", "nothing", DateTime.UtcNow, DateTime.UtcNow.AddHours(2));
         var result = await taskService.Create(createTaskRequest, user.Id);
         
@@ -61,7 +73,7 @@ public class TaskServiceTests
         taskRepoMock.Setup(repo => repo.Add(It.IsAny<Domain.Task.Entities.Task>()))
             .Callback<Domain.Task.Entities.Task>(task => createdTask = task);
 
-        var taskService = new TaskService(taskRepoMock.Object, groupRepoMock.Object, userRepoMock.Object, unitOfWorkMock.Object);
+        var taskService = new TaskService(taskRepoMock.Object, groupRepoMock.Object, userRepoMock.Object, unitOfWorkMock.Object, _mapper);
         var createTaskRequest = new CreateTaskRequest("test", "nothing", DateTime.UtcNow,DateTime.UtcNow.AddHours(2));
         
         var result = await taskService.CreateForGroup(createTaskRequest, firstUser.Id);

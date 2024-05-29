@@ -8,8 +8,7 @@ using Entities;
 
 public interface IGroupService
 {
-    public Task<Result<Group>> CreateGroup(String name, UserId userId);
-    public Task<Result<Group>> ReadGroup(GroupId id);   
+    public Task<Result<Group>> CreateGroup(string name, UserId userId);
     public Task<Result<InvitationDto>> InviteUserByEmail(string email, GroupId groupId, UserId invitingUserId);   
     public Task<Result> CancelInvitation(InvitationId id);
     public Task<Result> AcceptInvitation(InvitationId id);

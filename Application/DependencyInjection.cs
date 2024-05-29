@@ -21,7 +21,7 @@ public static class DependencyInjection
         services.AddScoped<IGroupService,GroupService>();
         services.AddScoped<ITaskService,TaskService>();
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
-        
+        services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
         return services;
     }
 }
