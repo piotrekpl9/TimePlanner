@@ -1,4 +1,5 @@
 using Application.Common.Data;
+using AutoMapper;
 using Domain.Group.Errors;
 using Domain.Group.Models.Dtos;
 using Domain.Group.Models.Enums;
@@ -18,7 +19,8 @@ public class GroupService(
     IGroupRepository groupRepository,
     IUserRepository userRepository,
     ITaskRepository taskRepository,
-    IUnitOfWork unitOfWork) : IGroupService
+    IUnitOfWork unitOfWork, 
+    IMapper mapper) : IGroupService
 {
     public async Task<Result<Group>> CreateGroup(string name, UserId userId)
     {
@@ -87,8 +89,7 @@ public class GroupService(
         groupRepository.Update(group);
         await unitOfWork.SaveChangesAsync();
 
-        var invitationDto = new InvitationDto(email, invitationResult.Value.Creator, invitationResult.Value.Status,
-            invitationResult.Value.CreatedAt);
+        var invitationDto =  mapper.Map<InvitationDto>(invitationResult.Value);
         
         return Result<InvitationDto>.Success(invitationDto);
     }

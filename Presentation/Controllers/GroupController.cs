@@ -1,4 +1,7 @@
 using System.Security.Claims;
+using Application.Authentication.Model;
+using Application.Group.Validators;
+using AutoMapper;
 using Domain.Group.Entities;
 using Domain.Group.Models;
 using Domain.Group.Models.Enums;
@@ -7,6 +10,7 @@ using Domain.Group.Repositories;
 using Domain.Group.Services;
 using Domain.Shared;
 using Domain.User.ValueObjects;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -18,24 +22,36 @@ namespace Presentation.Controllers;
 [Route("api/[controller]")]
 public class GroupController(IGroupService groupService, IGroupRepository groupRepository, IAuthorizationService authorizationService) : Controller
 {
-    
     [HttpPost("create")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest,Type = typeof(Error))]
-    public async Task<IResult> CreateGroup([FromBody] CreateGroupRequest createRequest)
+    public async Task<IResult> CreateGroup([FromBody] CreateGroupRequest createRequest, IValidator<CreateGroupRequest> validator)
     {   
+        var validationResult = await validator.ValidateAsync(createRequest);
+        if (!validationResult.IsValid)
+        {
+            return Results.ValidationProblem(validationResult.ToDictionary());
+        }
+        
         var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
      
         var result = await groupService.CreateGroup(createRequest.Name, userId);
         return result.IsSuccess ? Results.Ok() : Results.BadRequest(result.Error);
-
+      
+            
     }
     
     [HttpPost("{groupGuid:guid}/invitations/create")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest,Type = typeof(Error))]
-    public async Task<IResult> InviteUser(Guid groupGuid, [FromBody] InviteUserRequest inviteUserRequest)
-    {
+    public async Task<IResult> InviteUser(Guid groupGuid, [FromBody] InviteUserRequest inviteUserRequest, IValidator<InviteUserRequest> validator)
+    {   
+        var validationResult = await validator.ValidateAsync(inviteUserRequest);
+        if (!validationResult.IsValid)
+        {
+            return Results.ValidationProblem(validationResult.ToDictionary());
+        }
+        
         var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
         var groupId = new GroupId(groupGuid);
         
@@ -87,7 +103,7 @@ public class GroupController(IGroupService groupService, IGroupRepository groupR
         {
             return Results.Forbid();
         }
-        
+
         var result = await groupService.RejectInvitation(new InvitationId(id));
         return result.IsSuccess ? Results.Ok() : Results.BadRequest(result.Error);
     }

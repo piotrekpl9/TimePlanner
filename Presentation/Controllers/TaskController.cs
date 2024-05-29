@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using AutoMapper;
 using Domain.Group.Models.ValueObjects;
 using Domain.Shared;
 using Domain.Task.Models;
@@ -8,6 +9,7 @@ using Domain.Task.Repositories;
 using Domain.Task.Services;
 using Domain.User.Models.Dtos;
 using Domain.User.ValueObjects;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -16,13 +18,18 @@ namespace Presentation.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class TaskController(ITaskService taskService, ITaskRepository taskRepository, IAuthorizationService authorizationService) : Controller
+public class TaskController(ITaskService taskService, ITaskRepository taskRepository, IAuthorizationService authorizationService, IMapper mapper) : Controller
 {
     [HttpPost("user")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest,Type = typeof(Error))]
-    public async Task<IResult> CreateTask([FromBody] CreateTaskRequest createRequest)
+    public async Task<IResult> CreateTask([FromBody] CreateTaskRequest createRequest, IValidator<CreateTaskRequest> validator)
     {   
+        var validationResult = await validator.ValidateAsync(createRequest);
+        if (!validationResult.IsValid)
+        {
+            return Results.ValidationProblem(validationResult.ToDictionary());
+        }
         var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
 
         var result = await taskService.Create(createRequest, userId);
@@ -33,8 +40,13 @@ public class TaskController(ITaskService taskService, ITaskRepository taskReposi
     [HttpPost("group")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest,Type = typeof(Error))]
-    public async Task<IResult> CreateTaskForGroup([FromBody] CreateTaskRequest createRequest)
+    public async Task<IResult> CreateTaskForGroup([FromBody] CreateTaskRequest createRequest, IValidator<CreateTaskRequest> validator)
     {   
+        var validationResult = await validator.ValidateAsync(createRequest);
+        if (!validationResult.IsValid)
+        {
+            return Results.ValidationProblem(validationResult.ToDictionary());
+        }
         var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
 
         var result = await taskService.CreateForGroup(createRequest, userId);
@@ -61,11 +73,7 @@ public class TaskController(ITaskService taskService, ITaskRepository taskReposi
         {
             return Results.NotFound();
         }
-
-        var userDto = new UserDto(task.Creator.Name, task.Creator.Surname, task.Creator.Email, task.Creator.CreatedAt);
-        var taskDto = new TaskDto(task.Name, task.Notes, task.Status.ToString(), userDto, task.GroupId?.Value, task.PlannedStartHour, task.PlannedEndHour, task.CreatedAt);
-        
-        return Results.Ok(taskDto);
+        return Results.Ok(mapper.Map<TaskDto>(task));
 
     }
     
@@ -75,8 +83,7 @@ public class TaskController(ITaskService taskService, ITaskRepository taskReposi
     {   
         var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
         var tasks = await taskRepository.ReadAllByUserId(userId);
-        List<TaskDto> taskDtos = [];
-        taskDtos.AddRange(from task in tasks let userDto = new UserDto(task.Creator.Name, task.Creator.Surname, task.Creator.Email, task.Creator.CreatedAt) select new TaskDto(task.Name, task.Notes, task.Status.ToString(), userDto, task.GroupId?.Value, task.PlannedStartHour, task.PlannedEndHour, task.CreatedAt));
+        List<TaskDto> taskDtos = tasks.Select(mapper.Map<TaskDto>).ToList();
 
         return Results.Ok(taskDtos);
     }
@@ -96,20 +103,20 @@ public class TaskController(ITaskService taskService, ITaskRepository taskReposi
             return Results.Forbid();
         }
         var tasks = await taskRepository.ReadAllByGroupId(groupId);
-        
-        List<TaskDto> taskDtos = [];
-        taskDtos.AddRange(
-            from task in tasks let userDto = new UserDto(task.Creator.Name, task.Creator.Surname, task.Creator.Email, task.Creator.CreatedAt) 
-            select new TaskDto(task.Name, task.Notes, task.Status.ToString(), userDto, task.GroupId?.Value, task.PlannedStartHour, task.PlannedEndHour, task.CreatedAt));
-
+        List<TaskDto> taskDtos = tasks.Select(mapper.Map<TaskDto>).ToList();
         return Results.Ok(taskDtos);
     }
     
     [HttpPut("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TaskDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest,Type = typeof(Error))]
-    public async Task<IResult> UpdateTask(Guid id, [FromBody] UpdateTaskRequest updateTaskRequest)
+    public async Task<IResult> UpdateTask(Guid id, [FromBody] UpdateTaskRequest updateTaskRequest, IValidator<UpdateTaskRequest> validator)
     {   
+        var validationResult = await validator.ValidateAsync(updateTaskRequest);
+        if (!validationResult.IsValid)
+        {
+            return Results.ValidationProblem(validationResult.ToDictionary());
+        }
         var taskId = new TaskId(id);
         var taskAuthorizationResult = await authorizationService
             .AuthorizeAsync(User, taskId,"TaskAssignedPolicy");

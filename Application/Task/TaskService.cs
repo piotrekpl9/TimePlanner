@@ -1,4 +1,5 @@
 using Application.Common.Data;
+using AutoMapper;
 using Domain.Group.Errors;
 using Domain.Group.Models.ValueObjects;
 using Domain.Group.Repositories;
@@ -19,7 +20,7 @@ using TaskStatus = Domain.Task.Models.Enums.TaskStatus;
 namespace Application.Task;
 using Task = Domain.Task.Entities.Task;
 
-public class TaskService(ITaskRepository taskRepository, IGroupRepository groupRepository, IUserRepository userRepository, IUnitOfWork unitOfWork) : ITaskService
+public class TaskService(ITaskRepository taskRepository, IGroupRepository groupRepository, IUserRepository userRepository, IUnitOfWork unitOfWork, IMapper mapper) : ITaskService
 {
     public async Task<Result<TaskDto>> CreateForGroup(CreateTaskRequest createRequest, UserId userId)
     {
@@ -42,9 +43,7 @@ public class TaskService(ITaskRepository taskRepository, IGroupRepository groupR
         await taskRepository.Add(task);
         await unitOfWork.SaveChangesAsync();
         
-        var userDto = new UserDto(task.Creator.Name, task.Creator.Surname, task.Creator.Email, task.Creator.CreatedAt);
-        var taskDto = new TaskDto(task.Name, task.Notes, task.Status.ToString(), userDto, task.GroupId?.Value, task.PlannedStartHour, task.PlannedEndHour, task.CreatedAt);
-        
+        var taskDto = mapper.Map<TaskDto>(task);
         return Result<TaskDto>.Success(taskDto);
     }
 
@@ -60,9 +59,9 @@ public class TaskService(ITaskRepository taskRepository, IGroupRepository groupR
 
         await taskRepository.Add(task);
         await unitOfWork.SaveChangesAsync();
-        var userDto = new UserDto(task.Creator.Name, task.Creator.Surname, task.Creator.Email, task.Creator.CreatedAt);
-        var taskDto = new TaskDto(task.Name, task.Notes, task.Status.ToString(), userDto, task.GroupId?.Value, task.PlannedStartHour, task.PlannedEndHour, task.CreatedAt);
         
+        var taskDto = mapper.Map<TaskDto>(task);
+
         return Result<TaskDto>.Success(taskDto);
     }
 
@@ -78,8 +77,8 @@ public class TaskService(ITaskRepository taskRepository, IGroupRepository groupR
         taskRepository.Update(task);
         await unitOfWork.SaveChangesAsync();
         
-        var userDto = new UserDto(task.Creator.Name, task.Creator.Surname, task.Creator.Email, task.Creator.CreatedAt);
-        var taskDto = new TaskDto(task.Name, task.Notes, task.Status.ToString(), userDto, task.GroupId?.Value, task.PlannedStartHour, task.PlannedEndHour, task.CreatedAt);
+        var taskDto = mapper.Map<TaskDto>(task);
+        
         return Result<TaskDto>.Success(taskDto);
     }
 
