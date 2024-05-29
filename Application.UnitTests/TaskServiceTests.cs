@@ -31,7 +31,7 @@ public class TaskServiceTests
             .Callback<Domain.Task.Entities.Task>(task => createdTask = task);
 
         var taskService = new TaskService(taskRepoMock.Object, groupRepoMock.Object, userRepoMock.Object, unitOfWorkMock.Object);
-        var createTaskRequest = new CreateTaskRequest("test", "nothing", DateTime.UtcNow);
+        var createTaskRequest = new CreateTaskRequest("test", "nothing", DateTime.UtcNow, DateTime.UtcNow.AddHours(2));
         var result = await taskService.Create(createTaskRequest, user.Id);
         
         Assert.True(result.IsSuccess);
@@ -62,7 +62,7 @@ public class TaskServiceTests
             .Callback<Domain.Task.Entities.Task>(task => createdTask = task);
 
         var taskService = new TaskService(taskRepoMock.Object, groupRepoMock.Object, userRepoMock.Object, unitOfWorkMock.Object);
-        var createTaskRequest = new CreateTaskRequest("test", "nothing", DateTime.UtcNow);
+        var createTaskRequest = new CreateTaskRequest("test", "nothing", DateTime.UtcNow,DateTime.UtcNow.AddHours(2));
         
         var result = await taskService.CreateForGroup(createTaskRequest, firstUser.Id);
 

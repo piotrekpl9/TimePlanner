@@ -16,7 +16,8 @@ public sealed class Task : Entity<TaskId>
     public TaskStatus Status { get; set; }
     public User Creator { get; set; }
     public GroupId? GroupId { get; set; }
-    public DateTime PlannedAt { get; set; }
+    public DateTime PlannedStartHour { get; set; }
+    public DateTime PlannedEndHour { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public DateTime? DeletedAt { get; set; }
@@ -29,7 +30,8 @@ public sealed class Task : Entity<TaskId>
         List<User> assignedUsers, 
         User creator, 
         GroupId? groupId, 
-        DateTime plannedAt, 
+        DateTime plannedStartHour, 
+        DateTime plannedEndHour, 
         DateTime createdAt, 
         DateTime? updatedAt, 
         DateTime? deletedAt
@@ -41,7 +43,8 @@ public sealed class Task : Entity<TaskId>
         _assignedUsers = assignedUsers;
         Creator = creator;
         GroupId = groupId;
-        PlannedAt = plannedAt;
+        PlannedStartHour = plannedStartHour;
+        PlannedEndHour = plannedEndHour;
         CreatedAt = createdAt;
         UpdatedAt = updatedAt;
         DeletedAt = deletedAt;
@@ -61,7 +64,8 @@ public sealed class Task : Entity<TaskId>
         string name, 
         string notes, 
         TaskStatus status, 
-        DateTime plannedAt, 
+        DateTime plannedStartHour, 
+        DateTime plannedEndHour, 
         DateTime createdAt, 
         DateTime? updatedAt, 
         DateTime? deletedAt
@@ -70,28 +74,39 @@ public sealed class Task : Entity<TaskId>
         Name = name;
         Notes = notes;
         Status = status;
-        PlannedAt = plannedAt;
+        PlannedStartHour = plannedStartHour;
+        PlannedEndHour = plannedEndHour;
         CreatedAt = createdAt;
         UpdatedAt = updatedAt;
         DeletedAt = deletedAt;
     }
     
-    public static Task CreateForSelf(string name, string notes, TaskStatus status, User user, DateTime plannedAt)
+    public static Task CreateForSelf(string name, string notes, TaskStatus status, User user, DateTime plannedStartHour, DateTime plannedEndHour)
     {
-        return new Task(TaskId.Create(), name, notes, status, [user], user, null, plannedAt, DateTime.UtcNow, null, null);
+        if (plannedStartHour > plannedEndHour)
+        {
+            plannedEndHour = plannedStartHour.AddMinutes(1);
+        }
+        return new Task(TaskId.Create(), name, notes, status, [user], user, null, plannedStartHour, plannedEndHour, DateTime.UtcNow, null, null);
     }
     
-    public static Task CreateForGroup(string name, string notes, TaskStatus status, List<User> users, GroupId groupId, User creator, DateTime plannedAt)
+    public static Task CreateForGroup(string name, string notes, TaskStatus status, List<User> users, GroupId groupId, User creator, DateTime plannedStartHour, DateTime plannedEndHour)
     {
-        return new Task(TaskId.Create(), name, notes, status, users, creator, groupId, plannedAt, DateTime.UtcNow, null, null);
+        return new Task(TaskId.Create(), name, notes, status, users, creator, groupId,  plannedStartHour, plannedEndHour, DateTime.UtcNow, null, null);
     }
 
-    public void Update(string? name, string? notes, TaskStatus? status, DateTime? plannedAt)
+    public void Update(string? name, string? notes, TaskStatus? status, DateTime? plannedStartHour, DateTime? plannedEndHour)
     {
         Name = name ?? Name;
         Notes = notes ?? Notes;
         Status = status ?? Status;
-        PlannedAt = plannedAt ?? PlannedAt;
+        PlannedStartHour = plannedStartHour ?? PlannedStartHour;
+        
+        if (PlannedStartHour > PlannedEndHour || PlannedStartHour > plannedEndHour)
+        {
+            plannedEndHour = PlannedStartHour;
+        }
+        PlannedEndHour = plannedEndHour ?? PlannedEndHour;
         UpdatedAt = DateTime.UtcNow;
     }
     

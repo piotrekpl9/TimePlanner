@@ -17,6 +17,8 @@ namespace Presentation.Controllers;
 public class UserController(IUserService userService) : Controller
 {
     [HttpPost("/update-password")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest,Type = typeof(Error))]
     public async Task<IResult> Update(
         [FromBody] PasswordUpdateRequest updateRequest,
         IValidator<PasswordUpdateRequest> validator)

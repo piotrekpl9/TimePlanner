@@ -31,6 +31,7 @@ public static class SwaggerOptions
                     new string[]{}
                 }
             });
+            opt.OrderActionsBy(description => description.HttpMethod);
         });
     }   
 }

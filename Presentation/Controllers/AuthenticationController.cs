@@ -1,5 +1,7 @@
 using Application.Authentication;
 using Application.Authentication.Model;
+using Domain.Shared;
+using Domain.Task.Models.Dtos;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -11,6 +13,8 @@ namespace Presentation.Controllers;
 public class AuthenticationController(IAuthenticationService authenticationService) : Controller
 {
     [HttpPost("/sign-up")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RegisterResponse))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest,Type = typeof(Error))]
     [AllowAnonymous]
     public async Task<IResult> SignUp(
         [FromBody] RegisterRequest registerRequest,

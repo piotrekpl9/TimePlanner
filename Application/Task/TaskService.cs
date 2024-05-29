@@ -37,13 +37,13 @@ public class TaskService(ITaskRepository taskRepository, IGroupRepository groupR
         
         var usersList = await userRepository.GetByIdList(group.Members.Select(member => member.UserId).ToList());
         
-        var task = Task.CreateForGroup(createRequest.Name, createRequest.Notes, TaskStatus.Pending, usersList, group.Id, creator, createRequest.PlannedAt);
+        var task = Task.CreateForGroup(createRequest.Name, createRequest.Notes, TaskStatus.Pending, usersList, group.Id, creator, createRequest.PlannedStartHour.ToUniversalTime(),createRequest.PlannedEndHour.ToUniversalTime());
 
         await taskRepository.Add(task);
         await unitOfWork.SaveChangesAsync();
         
         var userDto = new UserDto(task.Creator.Name, task.Creator.Surname, task.Creator.Email, task.Creator.CreatedAt);
-        var taskDto = new TaskDto(task.Name, task.Notes, task.Status.ToString(), userDto, task.GroupId?.Value, task.PlannedAt, task.CreatedAt);
+        var taskDto = new TaskDto(task.Name, task.Notes, task.Status.ToString(), userDto, task.GroupId?.Value, task.PlannedStartHour, task.PlannedEndHour, task.CreatedAt);
         
         return Result<TaskDto>.Success(taskDto);
     }
@@ -56,12 +56,12 @@ public class TaskService(ITaskRepository taskRepository, IGroupRepository groupR
             return Result<TaskDto>.Failure(UserError.DoesntExists);
         }
         
-        var task = Task.CreateForSelf(createRequest.Name, createRequest.Notes, TaskStatus.Pending, creator, createRequest.PlannedAt.ToUniversalTime());
+        var task = Task.CreateForSelf(createRequest.Name, createRequest.Notes, TaskStatus.Pending, creator, createRequest.PlannedStartHour.ToUniversalTime(),createRequest.PlannedEndHour.ToUniversalTime());
 
         await taskRepository.Add(task);
         await unitOfWork.SaveChangesAsync();
         var userDto = new UserDto(task.Creator.Name, task.Creator.Surname, task.Creator.Email, task.Creator.CreatedAt);
-        var taskDto = new TaskDto(task.Name, task.Notes, task.Status.ToString(), userDto, task.GroupId?.Value, task.PlannedAt, task.CreatedAt);
+        var taskDto = new TaskDto(task.Name, task.Notes, task.Status.ToString(), userDto, task.GroupId?.Value, task.PlannedStartHour, task.PlannedEndHour, task.CreatedAt);
         
         return Result<TaskDto>.Success(taskDto);
     }
@@ -75,7 +75,7 @@ public class TaskService(ITaskRepository taskRepository, IGroupRepository groupR
         }
 
         var userDto = new UserDto(task.Creator.Name, task.Creator.Surname, task.Creator.Email, task.Creator.CreatedAt);
-        var taskDto = new TaskDto(task.Name, task.Notes, task.Status.ToString(), userDto, task.GroupId?.Value, task.PlannedAt, task.CreatedAt);
+        var taskDto = new TaskDto(task.Name, task.Notes, task.Status.ToString(), userDto, task.GroupId?.Value, task.PlannedStartHour, task.PlannedEndHour, task.CreatedAt);
         
         return Result<TaskDto>.Success(taskDto);
     }
@@ -84,7 +84,7 @@ public class TaskService(ITaskRepository taskRepository, IGroupRepository groupR
     {
         var tasks = await taskRepository.ReadAllByUserId(userId);
         List<TaskDto> taskDtos = [];
-        taskDtos.AddRange(from task in tasks let userDto = new UserDto(task.Creator.Name, task.Creator.Surname, task.Creator.Email, task.Creator.CreatedAt) select new TaskDto(task.Name, task.Notes, task.Status.ToString(), userDto, task.GroupId?.Value, task.PlannedAt, task.CreatedAt));
+        taskDtos.AddRange(from task in tasks let userDto = new UserDto(task.Creator.Name, task.Creator.Surname, task.Creator.Email, task.Creator.CreatedAt) select new TaskDto(task.Name, task.Notes, task.Status.ToString(), userDto, task.GroupId?.Value, task.PlannedStartHour, task.PlannedEndHour, task.CreatedAt));
         return Result<List<TaskDto>>.Success(taskDtos);
     }
 
@@ -93,7 +93,7 @@ public class TaskService(ITaskRepository taskRepository, IGroupRepository groupR
         var tasks = await taskRepository.ReadAllByGroupId(groupId);
         
         List<TaskDto> taskDtos = [];
-        taskDtos.AddRange(from task in tasks let userDto = new UserDto(task.Creator.Name, task.Creator.Surname, task.Creator.Email, task.Creator.CreatedAt) select new TaskDto(task.Name, task.Notes, task.Status.ToString(), userDto, task.GroupId?.Value, task.PlannedAt, task.CreatedAt));
+        taskDtos.AddRange(from task in tasks let userDto = new UserDto(task.Creator.Name, task.Creator.Surname, task.Creator.Email, task.Creator.CreatedAt) select new TaskDto(task.Name, task.Notes, task.Status.ToString(), userDto, task.GroupId?.Value, task.PlannedStartHour, task.PlannedEndHour, task.CreatedAt));
         return Result<List<TaskDto>>.Success(taskDtos);
     }
 
@@ -105,12 +105,12 @@ public class TaskService(ITaskRepository taskRepository, IGroupRepository groupR
             return Result<TaskDto>.Failure(TaskError.TaskNotFound);
         }
         
-        task.Update(newTask.Name, newTask.Notes, newTask.Status, newTask.PlannedAt);
+        task.Update(newTask.Name, newTask.Notes, newTask.Status, newTask.PlannedStartHour, newTask.PlannedEndHour);
         taskRepository.Update(task);
         await unitOfWork.SaveChangesAsync();
         
         var userDto = new UserDto(task.Creator.Name, task.Creator.Surname, task.Creator.Email, task.Creator.CreatedAt);
-        var taskDto = new TaskDto(task.Name, task.Notes, task.Status.ToString(), userDto, task.GroupId?.Value, task.PlannedAt, task.CreatedAt);
+        var taskDto = new TaskDto(task.Name, task.Notes, task.Status.ToString(), userDto, task.GroupId?.Value, task.PlannedStartHour, task.PlannedEndHour, task.CreatedAt);
         return Result<TaskDto>.Success(taskDto);
     }
 
