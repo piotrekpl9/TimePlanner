@@ -4,7 +4,9 @@ using Domain.Shared;
 using Domain.Task.Models;
 using Domain.Task.Models.Dtos;
 using Domain.Task.Models.ValueObjects;
+using Domain.Task.Repositories;
 using Domain.Task.Services;
+using Domain.User.Models.Dtos;
 using Domain.User.ValueObjects;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -14,7 +16,7 @@ namespace Presentation.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class TaskController(ITaskService taskService, IAuthorizationService authorizationService) : Controller
+public class TaskController(ITaskService taskService, ITaskRepository taskRepository, IAuthorizationService authorizationService) : Controller
 {
     [HttpPost("user")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -39,11 +41,10 @@ public class TaskController(ITaskService taskService, IAuthorizationService auth
         return result.IsSuccess ? Results.Ok() : Results.BadRequest(result.Error);
 
     }
-
     
     [HttpGet("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TaskDto))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest,Type = typeof(Error))]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IResult> ReadTask(Guid id)
     {
         var taskId = new TaskId(id);
@@ -55,25 +56,34 @@ public class TaskController(ITaskService taskService, IAuthorizationService auth
             return Results.Forbid();
         }
         
-        var result = await taskService.Read(taskId);
-        return result.IsSuccess ? Results.Ok(result.Value) : Results.BadRequest(result.Error);
+        var task = await taskRepository.Read(taskId);
+        if (task is null)
+        {
+            return Results.NotFound();
+        }
+
+        var userDto = new UserDto(task.Creator.Name, task.Creator.Surname, task.Creator.Email, task.Creator.CreatedAt);
+        var taskDto = new TaskDto(task.Name, task.Notes, task.Status.ToString(), userDto, task.GroupId?.Value, task.PlannedStartHour, task.PlannedEndHour, task.CreatedAt);
+        
+        return Results.Ok(taskDto);
 
     }
     
     [HttpGet("user/")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TaskDto))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest,Type = typeof(Error))]
     public async Task<IResult> ReadUserTasks()
     {   
         var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
-        var result = await taskService.ReadUserTasks(userId);
-        return result.IsSuccess ? Results.Ok(result.Value) : Results.BadRequest(result.Error);
+        var tasks = await taskRepository.ReadAllByUserId(userId);
+        List<TaskDto> taskDtos = [];
+        taskDtos.AddRange(from task in tasks let userDto = new UserDto(task.Creator.Name, task.Creator.Surname, task.Creator.Email, task.Creator.CreatedAt) select new TaskDto(task.Name, task.Notes, task.Status.ToString(), userDto, task.GroupId?.Value, task.PlannedStartHour, task.PlannedEndHour, task.CreatedAt));
 
+        return Results.Ok(taskDtos);
     }
     
     [HttpGet("group/{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TaskDto))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest,Type = typeof(Error))]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IResult> ReadGroupTasks(Guid id)
     {   
         var groupId = new GroupId(id);
@@ -85,9 +95,14 @@ public class TaskController(ITaskService taskService, IAuthorizationService auth
         {
             return Results.Forbid();
         }
-     
-        var result = await taskService.ReadGroupTasks(groupId);
-        return result.IsSuccess ? Results.Ok(result.Value) : Results.BadRequest(result.Error);
+        var tasks = await taskRepository.ReadAllByGroupId(groupId);
+        
+        List<TaskDto> taskDtos = [];
+        taskDtos.AddRange(
+            from task in tasks let userDto = new UserDto(task.Creator.Name, task.Creator.Surname, task.Creator.Email, task.Creator.CreatedAt) 
+            select new TaskDto(task.Name, task.Notes, task.Status.ToString(), userDto, task.GroupId?.Value, task.PlannedStartHour, task.PlannedEndHour, task.CreatedAt));
+
+        return Results.Ok(taskDtos);
     }
     
     [HttpPut("{id:guid}")]

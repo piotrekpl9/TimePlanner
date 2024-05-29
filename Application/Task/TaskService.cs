@@ -66,37 +66,6 @@ public class TaskService(ITaskRepository taskRepository, IGroupRepository groupR
         return Result<TaskDto>.Success(taskDto);
     }
 
-    public async Task<Result<TaskDto>> Read(TaskId id)
-    {
-        var task = await taskRepository.Read(id);
-        if (task is null)
-        {
-            return Result<TaskDto>.Failure(TaskError.TaskNotFound);
-        }
-
-        var userDto = new UserDto(task.Creator.Name, task.Creator.Surname, task.Creator.Email, task.Creator.CreatedAt);
-        var taskDto = new TaskDto(task.Name, task.Notes, task.Status.ToString(), userDto, task.GroupId?.Value, task.PlannedStartHour, task.PlannedEndHour, task.CreatedAt);
-        
-        return Result<TaskDto>.Success(taskDto);
-    }
-
-    public async Task<Result<List<TaskDto>>> ReadUserTasks(UserId userId)
-    {
-        var tasks = await taskRepository.ReadAllByUserId(userId);
-        List<TaskDto> taskDtos = [];
-        taskDtos.AddRange(from task in tasks let userDto = new UserDto(task.Creator.Name, task.Creator.Surname, task.Creator.Email, task.Creator.CreatedAt) select new TaskDto(task.Name, task.Notes, task.Status.ToString(), userDto, task.GroupId?.Value, task.PlannedStartHour, task.PlannedEndHour, task.CreatedAt));
-        return Result<List<TaskDto>>.Success(taskDtos);
-    }
-
-    public async Task<Result<List<TaskDto>>> ReadGroupTasks(GroupId groupId)
-    {
-        var tasks = await taskRepository.ReadAllByGroupId(groupId);
-        
-        List<TaskDto> taskDtos = [];
-        taskDtos.AddRange(from task in tasks let userDto = new UserDto(task.Creator.Name, task.Creator.Surname, task.Creator.Email, task.Creator.CreatedAt) select new TaskDto(task.Name, task.Notes, task.Status.ToString(), userDto, task.GroupId?.Value, task.PlannedStartHour, task.PlannedEndHour, task.CreatedAt));
-        return Result<List<TaskDto>>.Success(taskDtos);
-    }
-
     public async Task<Result<TaskDto>> Update(TaskId id, UpdateTaskRequest newTask)
     {
         var task = await taskRepository.Read(id);

@@ -42,7 +42,7 @@ public class GroupService(
         return Result<Group>.Success(group);
     }
 
-    public async Task<Result<Group>> ReadGroup(GroupId id)
+    private async Task<Result<Group>> ReadGroup(GroupId id)
     {
         var group = await groupRepository.Read(id);
         return group is null ? Result<Group>.Failure(GroupError.GroupNotFound) : Result<Group>.Success(group);
