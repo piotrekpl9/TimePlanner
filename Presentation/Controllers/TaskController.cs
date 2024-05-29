@@ -1,6 +1,8 @@
 using System.Security.Claims;
 using Domain.Group.Models.ValueObjects;
+using Domain.Shared;
 using Domain.Task.Models;
+using Domain.Task.Models.Dtos;
 using Domain.Task.Models.ValueObjects;
 using Domain.Task.Services;
 using Domain.User.ValueObjects;
@@ -15,6 +17,8 @@ namespace Presentation.Controllers;
 public class TaskController(ITaskService taskService, IAuthorizationService authorizationService) : Controller
 {
     [HttpPost("user")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest,Type = typeof(Error))]
     public async Task<IResult> CreateTask([FromBody] CreateTaskRequest createRequest)
     {   
         var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
@@ -25,6 +29,8 @@ public class TaskController(ITaskService taskService, IAuthorizationService auth
     }
     
     [HttpPost("group")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest,Type = typeof(Error))]
     public async Task<IResult> CreateTaskForGroup([FromBody] CreateTaskRequest createRequest)
     {   
         var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
@@ -36,6 +42,8 @@ public class TaskController(ITaskService taskService, IAuthorizationService auth
 
     
     [HttpGet("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TaskDto))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest,Type = typeof(Error))]
     public async Task<IResult> ReadTask(Guid id)
     {
         var taskId = new TaskId(id);
@@ -53,6 +61,8 @@ public class TaskController(ITaskService taskService, IAuthorizationService auth
     }
     
     [HttpGet("user/")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TaskDto))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest,Type = typeof(Error))]
     public async Task<IResult> ReadUserTasks()
     {   
         var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
@@ -62,6 +72,8 @@ public class TaskController(ITaskService taskService, IAuthorizationService auth
     }
     
     [HttpGet("group/{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TaskDto))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest,Type = typeof(Error))]
     public async Task<IResult> ReadGroupTasks(Guid id)
     {   
         var groupId = new GroupId(id);
@@ -73,12 +85,14 @@ public class TaskController(ITaskService taskService, IAuthorizationService auth
         {
             return Results.Forbid();
         }
-        var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
+     
         var result = await taskService.ReadGroupTasks(groupId);
         return result.IsSuccess ? Results.Ok(result.Value) : Results.BadRequest(result.Error);
     }
     
     [HttpPut("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TaskDto))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest,Type = typeof(Error))]
     public async Task<IResult> UpdateTask(Guid id, [FromBody] UpdateTaskRequest updateTaskRequest)
     {   
         var taskId = new TaskId(id);

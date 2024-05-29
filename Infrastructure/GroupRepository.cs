@@ -36,6 +36,11 @@ public class GroupRepository(IApplicationDbContext dbContext, IUnitOfWork unitOf
         return dbContext.Groups.Include(group => group.Members).Where(group => group.Members.Any(member => member.UserId.Equals(userId))).SingleOrDefaultAsync();
     }
 
+    public async Task<List<Invitation>?> ReadInvitationsByUserId(UserId userId)
+    {
+        return dbContext.Groups.Include(group => group.Invitations).SelectMany(group => group.Invitations.Where(invitation => invitation.UserId.Equals(userId)).ToList()).ToList();
+    }
+
     public void Update(Group group)
     {
         dbContext.Groups.Update(group);

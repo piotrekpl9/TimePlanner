@@ -6,16 +6,18 @@ using TaskStatus = Domain.Task.Models.Enums.TaskStatus;
 
 public class UpdateTaskRequest
 {
-    public UpdateTaskRequest(string? name, string? notes, DateTime? plannedAt, TaskStatus? status)
+    public UpdateTaskRequest(string? name, string? notes, DateTime? plannedStartHour, DateTime? plannedEndHour, TaskStatus? status)
     {
         Name = name;
         Notes = notes;
-        PlannedAt = plannedAt;
+        PlannedStartHour = plannedStartHour;
+        PlannedEndHour = plannedEndHour;
         Status = status;
     }
     
     public string? Name { get; private set; }
     public string? Notes { get; private set; }
     public TaskStatus? Status { get; private set; }
-    public DateTime? PlannedAt { get; private set; }
+    public DateTime? PlannedStartHour { get; private set; }
+    public DateTime? PlannedEndHour { get; private set; }
 }

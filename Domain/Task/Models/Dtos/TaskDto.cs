@@ -13,7 +13,8 @@ public class TaskDto
         string status, 
         UserDto creator, 
         Guid? groupId, 
-        DateTime plannedAt, 
+        DateTime plannedStartHour, 
+        DateTime plannedEndHour, 
         DateTime createdAt
     ) 
     {
@@ -22,7 +23,8 @@ public class TaskDto
         Status = status;
         Creator = creator;
         GroupId = groupId;
-        PlannedAt = plannedAt;
+        PlannedStartHour = plannedStartHour;
+        PlannedEndHour = plannedEndHour;
         CreatedAt = createdAt;
     }
     public string Name { get; private set; }
@@ -30,6 +32,7 @@ public class TaskDto
     public string Status { get; private set; }
     public UserDto Creator { get; private set; }
     public Guid? GroupId { get; private set; }
-    public DateTime PlannedAt { get; private set; }
+    public DateTime PlannedStartHour { get; private set; }
+    public DateTime PlannedEndHour { get; private set; }
     public DateTime CreatedAt { get; private set; }
 }
