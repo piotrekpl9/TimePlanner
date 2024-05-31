@@ -1,16 +1,16 @@
 using Domain.Group.Models.ValueObjects;
 using Domain.User.ValueObjects;
-using Microsoft.EntityFrameworkCore;
 
 namespace Domain.Group.Entities;
 using Models.Enums;
 using Primitives;
 using User = User.Entities.User;
-public class Member : Entity<MemberId>
+public sealed class Member : Entity<MemberId>
 {
     private Member(MemberId id, UserId userId, User user, GroupId groupId, Role role, DateTime createdAt, DateTime? updatedAt, DateTime? deletedAt) : base(id)
     {
         User = user;
+        UserId = userId;
         Role = role;
         GroupId = groupId;
         CreatedAt = createdAt;
@@ -24,7 +24,7 @@ public class Member : Entity<MemberId>
         UpdatedAt = updatedAt;
         DeletedAt = deletedAt;
     }
-    public virtual User User { get; private set; }
+    public User User { get; private set; }
     public UserId UserId { get; private set; }
     public Role Role { get; private set; }
     public GroupId GroupId { get; private set; }

@@ -1,12 +1,11 @@
-using Domain.Group.Entities;
 using Microsoft.EntityFrameworkCore;
-namespace Application.Common.Data;
-using Domain.User.Entities;
-using Domain.Task.Entities;
+using Task = Domain.Task.Entities.Task;
+
+namespace Infrastructure.Common;
 
 public interface IApplicationDbContext
 {
-    DbSet<User> Users { get; set;  }
+    DbSet<Domain.User.Entities.User> Users { get; set;  }
     DbSet<Domain.Group.Entities.Group> Groups { get; set; }
     public DbSet<Task> Tasks { get; set; }
     

@@ -3,6 +3,7 @@ using Domain.Group.Entities;
 using Domain.Group.Models.ValueObjects;
 using Domain.Group.Repositories;
 using Domain.User.ValueObjects;
+using Infrastructure.Common;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure;

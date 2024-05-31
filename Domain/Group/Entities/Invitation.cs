@@ -3,8 +3,6 @@ using Domain.Group.Models.Enums;
 using Domain.Group.Models.ValueObjects;
 using Domain.Primitives;
 using Domain.Shared;
-using Domain.User.ValueObjects;
-using Microsoft.EntityFrameworkCore;
 
 namespace Domain.Group.Entities;
 
