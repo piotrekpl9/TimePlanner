@@ -3,6 +3,7 @@ using Domain.Group.Models.Enums;
 using Domain.Group.Models.ValueObjects;
 using Domain.Primitives;
 using Domain.Shared;
+using Domain.User.Errors;
 using Domain.User.ValueObjects;
 
 namespace Domain.Group.Entities;
@@ -14,7 +15,7 @@ public sealed class Group : AggregateRoot<GroupId>
     private readonly List<Member> _members = new List<Member>();
     public IReadOnlyCollection<Invitation> Invitations => _invitations.ToList();
     public IReadOnlyCollection<Member> Members => _members.ToList();
-    public string Name { get; set; }
+    public string Name { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
     public DateTime? DeletedAt { get; private set; }
@@ -37,21 +38,21 @@ public sealed class Group : AggregateRoot<GroupId>
         DeletedAt = deletedAt;
     }
     
-    public static Group Create(string name, UserId userId)
+    public static Group Create(string name, User user)
     {
         var groupGuid = new GroupId(Guid.NewGuid());
-        var creator = Member.CreateOwner(groupGuid,userId);
+        var creator = Member.CreateOwner(groupGuid, user);
         return new Group(groupGuid,  name, [], [creator], DateTime.UtcNow, null, null);
     }
     
     public Result<Invitation> Invite(User user, UserId senderId)
     {
-        if(Invitations.Any(e => e.UserId.Equals(user.Id) && e.Status is InvitationStatus.Pending))
+        if(Invitations.Any(e => e.User.Id.Equals(user.Id) && e.Status is InvitationStatus.Pending))
         {
             return Result<Invitation>.Failure(GroupError.UserAlreadyInvited);
         }
         
-        if (Members.Any(member => member.UserId.Equals(user.Id) && member.DeletedAt is null))
+        if (Members.Any(member => member.User.Id.Equals(user.Id) && member.DeletedAt is null))
         {
             return Result<Invitation>.Failure(GroupError.UserIsAMember);
         }
@@ -61,13 +62,13 @@ public sealed class Group : AggregateRoot<GroupId>
             return Result<Invitation>.Failure(GroupError.GroupIsDeleted);
         }
 
-        var sender = Members.FirstOrDefault(member => member.UserId.Equals(senderId));
+        var sender = Members.FirstOrDefault(member => member.User.Id.Equals(senderId));
         if (sender is null)
         {
             return Result<Invitation>.Failure(GroupError.UserIsNotMember);
         }
         
-        var invitation = new Invitation( new InvitationId(Guid.NewGuid()), Id, user.Id, sender, InvitationStatus.Pending,DateTime.UtcNow, null, null);
+        var invitation = new Invitation( new InvitationId(Guid.NewGuid()), Id, user, sender, InvitationStatus.Pending,DateTime.UtcNow, null, null);
         
         _invitations.Add(invitation);
 
@@ -76,14 +77,20 @@ public sealed class Group : AggregateRoot<GroupId>
     
     public Result<Member> AcceptInvitation(Invitation invitation)
     {
-        var memberResult = invitation.Accept();
-        if (memberResult is { IsSuccess: true, Value: not null })
+        if (!invitation.User.Id.Equals(invitation.User.Id))
         {
-            _members.Add(memberResult.Value);
-            return Result<Member>.Success(memberResult.Value);
+            return Result<Member>.Failure(UserError.IdDoesntMatch);
+        }
+        var acceptResult = invitation.Accept();
+       
+        if (acceptResult.IsSuccess)
+        {
+            var member = Member.Create(invitation.GroupId, invitation.User);
+            _members.Add(member);
+            return Result<Member>.Success(member);
         }
 
-        return Result<Member>.Failure(memberResult.Error);
+        return Result<Member>.Failure(acceptResult.Error);
     }
     
     public Result RejectInvitation(Invitation invitation)

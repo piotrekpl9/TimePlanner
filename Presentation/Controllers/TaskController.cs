@@ -13,6 +13,8 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Presentation.Model;
+using Presentation.Model.Requests;
 
 namespace Presentation.Controllers;
 
@@ -23,7 +25,9 @@ public class TaskController(ITaskService taskService, ITaskRepository taskReposi
     [HttpPost("user")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest,Type = typeof(Error))]
-    public async Task<IResult> CreateTask([FromBody] CreateTaskRequest createRequest, IValidator<CreateTaskRequest> validator)
+    public async Task<IResult> CreateTask(
+        [FromBody] CreateTaskRequest createRequest, 
+        [FromServices] IValidator<CreateTaskRequest> validator)
     {   
         var validationResult = await validator.ValidateAsync(createRequest);
         if (!validationResult.IsValid)
@@ -32,7 +36,7 @@ public class TaskController(ITaskService taskService, ITaskRepository taskReposi
         }
         var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
 
-        var result = await taskService.Create(createRequest, userId);
+        var result = await taskService.Create(mapper.Map<CreateTaskDto>(createRequest), userId);
         return result.IsSuccess ? Results.Ok() : Results.BadRequest(result.Error);
 
     }
@@ -40,7 +44,9 @@ public class TaskController(ITaskService taskService, ITaskRepository taskReposi
     [HttpPost("group")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest,Type = typeof(Error))]
-    public async Task<IResult> CreateTaskForGroup([FromBody] CreateTaskRequest createRequest, IValidator<CreateTaskRequest> validator)
+    public async Task<IResult> CreateTaskForGroup(
+        [FromBody] CreateTaskRequest createRequest, 
+        [FromServices] IValidator<CreateTaskRequest> validator)
     {   
         var validationResult = await validator.ValidateAsync(createRequest);
         if (!validationResult.IsValid)
@@ -49,7 +55,7 @@ public class TaskController(ITaskService taskService, ITaskRepository taskReposi
         }
         var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
 
-        var result = await taskService.CreateForGroup(createRequest, userId);
+        var result = await taskService.CreateForGroup(mapper.Map<CreateTaskDto>(createRequest), userId);
         return result.IsSuccess ? Results.Ok() : Results.BadRequest(result.Error);
 
     }
@@ -110,7 +116,10 @@ public class TaskController(ITaskService taskService, ITaskRepository taskReposi
     [HttpPut("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TaskDto))]
     [ProducesResponseType(StatusCodes.Status400BadRequest,Type = typeof(Error))]
-    public async Task<IResult> UpdateTask(Guid id, [FromBody] UpdateTaskRequest updateTaskRequest, IValidator<UpdateTaskRequest> validator)
+    public async Task<IResult> UpdateTask(
+        Guid id, 
+        [FromBody] UpdateTaskRequest updateTaskRequest, 
+        [FromServices] IValidator<UpdateTaskRequest> validator)
     {   
         var validationResult = await validator.ValidateAsync(updateTaskRequest);
         if (!validationResult.IsValid)
@@ -126,7 +135,7 @@ public class TaskController(ITaskService taskService, ITaskRepository taskReposi
             return Results.Forbid();
         }
         
-        var result = await taskService.Update(new TaskId(id), updateTaskRequest);
+        var result = await taskService.Update(new TaskId(id), mapper.Map<UpdateTaskDto>(updateTaskRequest));
         return result.IsSuccess ? Results.Ok(result.Value) : Results.BadRequest(result.Error);
 
     }

@@ -1,10 +1,9 @@
-using Application.Authentication.Model;
-using Domain.Task.Models;
+using Domain.Task.Models.Dtos;
 using FluentValidation;
 
-namespace Application.Task.Validators;
+namespace Presentation.Validators;
 
-public sealed class UpdateTaskRequestValidator : AbstractValidator<UpdateTaskRequest>
+public sealed class UpdateTaskRequestValidator : AbstractValidator<UpdateTaskDto>
 {
     public UpdateTaskRequestValidator()
     {

@@ -1,4 +1,4 @@
-namespace Domain.Task.Models;
+namespace Presentation.Model.Requests;
 
 public class CreateTaskRequest
 {

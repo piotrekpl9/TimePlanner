@@ -1,4 +1,4 @@
-namespace Domain.Group.Models;
+namespace Presentation.Model.Requests;
 
 public class InviteUserRequest
 {
@@ -7,5 +7,10 @@ public class InviteUserRequest
         Email = email;
     }
 
+    public InviteUserRequest()
+    {
+        
+    }
+    
     public string Email { get; }
 }

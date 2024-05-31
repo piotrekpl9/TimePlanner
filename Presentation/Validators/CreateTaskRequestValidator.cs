@@ -1,8 +1,9 @@
-using Application.Authentication.Model;
 using Domain.Task.Models;
 using FluentValidation;
+using Presentation.Model;
+using Presentation.Model.Requests;
 
-namespace Application.Task.Validators;
+namespace Presentation.Validators;
 
 public sealed class CreateTaskRequestValidator : AbstractValidator<CreateTaskRequest>
 {

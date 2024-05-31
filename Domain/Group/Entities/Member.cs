@@ -5,11 +5,12 @@ using Microsoft.EntityFrameworkCore;
 namespace Domain.Group.Entities;
 using Models.Enums;
 using Primitives;
-public sealed class Member : Entity<MemberId>
+using User = User.Entities.User;
+public class Member : Entity<MemberId>
 {
-    private Member(MemberId id, UserId userId, GroupId groupId, Role role, DateTime createdAt, DateTime? updatedAt, DateTime? deletedAt) : base(id)
+    private Member(MemberId id, UserId userId, User user, GroupId groupId, Role role, DateTime createdAt, DateTime? updatedAt, DateTime? deletedAt) : base(id)
     {
-        UserId = userId;
+        User = user;
         Role = role;
         GroupId = groupId;
         CreatedAt = createdAt;
@@ -23,6 +24,7 @@ public sealed class Member : Entity<MemberId>
         UpdatedAt = updatedAt;
         DeletedAt = deletedAt;
     }
+    public virtual User User { get; private set; }
     public UserId UserId { get; private set; }
     public Role Role { get; private set; }
     public GroupId GroupId { get; private set; }
@@ -30,13 +32,13 @@ public sealed class Member : Entity<MemberId>
     public DateTime? UpdatedAt { get; private set; }
     public DateTime? DeletedAt { get; private set; }
 
-    public static Member Create(GroupId groupId, Invitation invitation)
+    public static Member Create(GroupId groupId, User user)
     {
-        return new Member(new MemberId(Guid.NewGuid()), invitation.UserId, groupId, Role.Basic, DateTime.UtcNow, null, null);
+        return new Member(new MemberId(Guid.NewGuid()), user.Id, user, groupId, Role.Basic, DateTime.UtcNow, null, null);
     }
     
-    public static Member CreateOwner(GroupId groupId, UserId userId)
+    public static Member CreateOwner(GroupId groupId, User user)
     {
-        return new Member(new MemberId(Guid.NewGuid()), userId, groupId, Role.Admin, DateTime.UtcNow, null, null);
+        return new Member(new MemberId(Guid.NewGuid()), user.Id, user, groupId, Role.Admin, DateTime.UtcNow, null, null);
     }
 }

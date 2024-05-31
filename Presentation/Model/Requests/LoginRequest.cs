@@ -1,4 +1,4 @@
-namespace Application.Authentication.Model;
+namespace Presentation.Model.Requests;
 
 public class LoginRequest(string email, string password)
 {

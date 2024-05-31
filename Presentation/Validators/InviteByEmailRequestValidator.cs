@@ -1,8 +1,9 @@
-using Application.Authentication.Model;
 using Domain.Group.Models;
 using FluentValidation;
+using Presentation.Model;
+using Presentation.Model.Requests;
 
-namespace Application.Group.Validators;
+namespace Presentation.Validators;
 
 public sealed class InviteByEmailRequestValidator : AbstractValidator<InviteUserRequest>
 {

@@ -17,7 +17,7 @@ public class InvitationTargetAuthorizationHandler(IGroupRepository groupReposito
         
         var userId = new UserId(Guid.Parse( context.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
         var group = await groupRepository.ReadGroupByInvitationId(invitationId);
-        if (group != null && group.Invitations.Any(invitation => invitation.UserId.Equals(userId)))
+        if (group != null && group.Invitations.Any(invitation => invitation.User.Id.Equals(userId)))
         {
             context.Succeed(requirement);
         }

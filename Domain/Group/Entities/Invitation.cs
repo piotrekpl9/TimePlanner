@@ -8,14 +8,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Domain.Group.Entities;
 
-using User.Entities; 
-
-[Owned]
 public sealed class Invitation : Entity<InvitationId>
 {
-    internal Invitation(InvitationId id, GroupId groupId, UserId user, Member creator, InvitationStatus status, DateTime createdAt, DateTime? updatedAt, DateTime? deletedAt) : base(id)
+    internal Invitation(InvitationId id, GroupId groupId, User.Entities.User user, Member creator, InvitationStatus status, DateTime createdAt, DateTime? updatedAt, DateTime? deletedAt) : base(id)
     {
-        UserId = user;
+        User = user;
         Creator = creator;
         GroupId = groupId;
         Status = status;
@@ -30,7 +27,7 @@ public sealed class Invitation : Entity<InvitationId>
         UpdatedAt = updatedAt;
         DeletedAt = deletedAt;
     }
-    public UserId UserId { get; private set; }
+    public User.Entities.User User { get; private set; }
     public Member Creator { get; private set; }
     public GroupId GroupId { get; private set; }
     public InvitationStatus Status { get; private set; }
@@ -38,7 +35,7 @@ public sealed class Invitation : Entity<InvitationId>
     public DateTime? UpdatedAt { get; private set; }
     public DateTime? DeletedAt { get; private set; }
 
-    public Result<Member> Accept()
+    public Result Accept()
     {
         switch (Status)
         {
@@ -58,9 +55,8 @@ public sealed class Invitation : Entity<InvitationId>
         Status = InvitationStatus.Accepted;
         UpdatedAt = DateTime.UtcNow;
 
-        var member = Member.Create(GroupId,this);
         
-        return Result<Member>.Success(member);
+        return Result.Success();
     } 
     
     public Result Reject()

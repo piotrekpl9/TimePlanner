@@ -1,10 +1,8 @@
 using Application.Authentication.Model;
-using Domain.Shared;
-using Domain.User.Errors;
-using Domain.User.Repositories;
 using FluentValidation;
+using Presentation.Model.Requests;
 
-namespace Application.Authentication.Validators;
+namespace Presentation.Validators;
 
 public sealed class LoginRequestValidator : AbstractValidator<LoginRequest>
 {

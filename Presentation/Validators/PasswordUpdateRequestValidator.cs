@@ -1,12 +1,11 @@
-using Application.Authentication.Model;
 using Domain.User.Errors;
-using Domain.User.Models;
 using Domain.User.Repositories;
-using Domain.User.ValueObjects;
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
+using Presentation.Model;
+using Presentation.Model.Requests;
 
-namespace Application.User.Validators;
+namespace Presentation.Validators;
 
 public sealed class PasswordUpdateRequestValidator : AbstractValidator<PasswordUpdateRequest>
 {

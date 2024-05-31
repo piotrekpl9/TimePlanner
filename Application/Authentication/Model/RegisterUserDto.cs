@@ -1,6 +1,6 @@
 namespace Application.Authentication.Model;
 
-public class RegisterRequest(string name, string surname, string email, string password)
+public class RegisterUserDto(string name, string surname, string email, string password)
 {
     public string Name { get; set; } = name;
     public string Surname { get; set; } = surname;

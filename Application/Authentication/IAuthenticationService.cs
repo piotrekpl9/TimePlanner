@@ -6,6 +6,6 @@ namespace Application.Authentication;
 
 public interface IAuthenticationService
 {
-    Task<Result<RegisterResponse>> Register(RegisterRequest userDto);
-    Task<Result<LoginResponse>> Login(LoginRequest loginRequest);
+    Task<Result<RegisterResultDto>> Register(RegisterUserDto userDto);
+    Task<Result<LoginResultDto>> Login(LoginUserDto loginRequest);
 }

@@ -29,7 +29,7 @@ public class GroupServiceTests
     [ClassData(typeof(GroupCreateUserAlreadyInGroup))]
     public async Task CreateGroup_Should_ReturnFailure_When_UserAlreadyInOtherGroup(User user)
     {
-        var group = Group.Create("Rodmanowie", user.Id);
+        var group = Group.Create("Rodmanowie", user);
         var groupRepoMock = new Mock<IGroupRepository>();
         groupRepoMock.Setup(repository => repository.ReadGroupByUserId(user.Id)).ReturnsAsync(group);
         var userRepoMock = new Mock<IUserRepository>();
@@ -43,14 +43,14 @@ public class GroupServiceTests
         var result = await groupService.CreateGroup("Kowalscy", user.Id);
         
         Assert.True(result.IsFailure);
-        Assert.NotStrictEqual(Result<Group>.Failure(GroupError.UserAlreadyInOtherGroup), result);
+        Assert.NotStrictEqual(Result<GroupDto>.Failure(GroupError.UserAlreadyInOtherGroup), result);
     }
 
     [Theory]
     [ClassData(typeof(GroupCreateUserAlreadyInGroup))]
     public async Task InviteUserByEmail_Should_ReturnFailure_When_UserInvitingHimself(User user)
     {
-        var group = Group.Create("Rodmanowie", user.Id);
+        var group = Group.Create("Rodmanowie", user);
         var groupRepoMock = new Mock<IGroupRepository>();
         groupRepoMock.Setup(repository => repository.ReadGroupByUserId(user.Id)).ReturnsAsync(group);
         var userRepoMock = new Mock<IUserRepository>();
@@ -62,7 +62,7 @@ public class GroupServiceTests
         
         var groupService = new GroupService(groupRepoMock.Object,userRepoMock.Object, taskRepoMock.Object, unitOfWorkMock.Object, _mapper);
 
-        var result = await groupService.InviteUserByEmail(user.Email,group.Id, user.Id);
+        var result = await groupService.InviteUserByEmail(user.Email, group.Id, user.Id);
         
         Assert.True(result.IsFailure);
         Assert.NotStrictEqual(Result<InvitationDto>.Failure(GroupError.UserInvitingItself), result);
@@ -73,8 +73,7 @@ public class GroupCreateUserAlreadyInGroup : TheoryData<User>
 {
     public GroupCreateUserAlreadyInGroup()
     { 
-        var userResult = User.Create("Jan","Kowalski","j.kowalski@o2.pl","secret");
-        var user = userResult.Value;  
+        var user = User.Create("Jan","Kowalski","j.kowalski@o2.pl","secret");
     
         Assert.NotNull(user);
         

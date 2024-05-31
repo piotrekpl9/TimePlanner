@@ -1,4 +1,4 @@
-namespace Domain.User.Models;
+namespace Presentation.Model.Requests;
 
 public class PasswordUpdateRequest(string oldPassword, string newPassword)
 {

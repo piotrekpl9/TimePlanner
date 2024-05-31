@@ -1,7 +1,4 @@
-using Domain.Group.Models.ValueObjects;
-using Domain.Task.Models.ValueObjects;
-
-namespace Domain.Task.Models;
+namespace Presentation.Model.Requests;
 using TaskStatus = Domain.Task.Models.Enums.TaskStatus;
 
 public class UpdateTaskRequest

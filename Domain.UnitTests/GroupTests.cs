@@ -12,11 +12,10 @@ public class GroupTests
     [Fact]
     public void Create_Should_AssignCreatingUserAdminRole()
     {
-        var userResult = User.Create("Jan","Kowalski","j.kowalski@o2.pl","secret");
-        var user = userResult.Value;
+        var user = User.Create("Jan","Kowalski","j.kowalski@o2.pl","secret");
         Assert.NotNull(user);
         
-        var result = Group.Create("Kowalscy", user.Id);
+        var result = Group.Create("Kowalscy", user);
         
         var member = result.Members.FirstOrDefault(member => member.UserId.Equals(user.Id));
         Assert.NotNull(member);
@@ -167,13 +166,12 @@ public class GroupInviteProperTestData : TheoryData<User,UserId, Group>
 {
     public GroupInviteProperTestData()
     { 
-        var userResult = User.Create("Jan","Kowalski","j.kowalski@o2.pl","secret");
-        var userResult2 = User.Create("Adam","Sandler","a.sandler@o2.pl","secret");
-        var user = userResult.Value;
-        var target = userResult2.Value;
+        var user = User.Create("Jan","Kowalski","j.kowalski@o2.pl","secret");
+        var target = User.Create("Adam","Sandler","a.sandler@o2.pl","secret");
+       
         Assert.NotNull(user);
         Assert.NotNull(target);
-        var group = Group.Create("Kowalscy", user.Id);
+        var group = Group.Create("Kowalscy", user);
         Add(target, user.Id, group);
     }
 }
@@ -183,15 +181,13 @@ public class GroupInviteUserNotOwnerTestData : TheoryData<User,UserId, Group>
 {
     public GroupInviteUserNotOwnerTestData()
     { 
-        var userResult = User.Create("Jan","Kowalski","j.kowalski@o2.pl","secret");
-        var userResult2 = User.Create("Adam","Sandler","a.sandler@o2.pl","secret");
-        var userResult3 = User.Create("Denis","Rodman","d.rodman@o2.pl","secret");
-        var user = userResult.Value;  
-        var otherUser = userResult3.Value;
-        var target = userResult2.Value;
+        var user = User.Create("Jan","Kowalski","j.kowalski@o2.pl","secret");
+        var otherUser = User.Create("Adam","Sandler","a.sandler@o2.pl","secret");
+        var target = User.Create("Denis","Rodman","d.rodman@o2.pl","secret");
+     
         Assert.NotNull(user);
         Assert.NotNull(target);
-        var group = Group.Create("Rodmanowie", otherUser.Id);
+        var group = Group.Create("Rodmanowie", otherUser);
         Add(target, user.Id, group);
     }
 }
@@ -201,17 +197,15 @@ public class GroupMembersData : TheoryData<User, User, User, Group>
 {
     public GroupMembersData()
     { 
-        var userResult = User.Create("Jan","Kowalski","j.kowalski@o2.pl","secret");
-        var userResult2 = User.Create("Adam","Sandler","a.sandler@o2.pl","secret");
-        var userResult3 = User.Create("Denis","Rodman","d.rodman@o2.pl","secret");
-        var owner = userResult.Value;  
-        var basic1 = userResult3.Value;
-        var basic2 = userResult2.Value;
+        var owner = User.Create("Jan","Kowalski","j.kowalski@o2.pl","secret");
+        var basic1 = User.Create("Adam","Sandler","a.sandler@o2.pl","secret");
+        var basic2 = User.Create("Denis","Rodman","d.rodman@o2.pl","secret");
+       
         Assert.NotNull(owner);
         Assert.NotNull(basic1);       
         Assert.NotNull(basic2);
 
-        var group = Group.Create("Rodmanowie", owner.Id);
+        var group = Group.Create("Rodmanowie", owner);
         var inviteResult = group.Invite(basic1, owner.Id);
         var inviteResult2 = group.Invite(basic2, owner.Id);
         

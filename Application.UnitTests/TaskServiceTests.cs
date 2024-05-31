@@ -5,6 +5,7 @@ using AutoMapper;
 using Domain.Group.Repositories;
 using Domain.Shared;
 using Domain.Task.Models;
+using Domain.Task.Models.Dtos;
 using Domain.Task.Repositories;
 using Domain.User.Repositories;
 using Moq;
@@ -43,7 +44,7 @@ public class TaskServiceTests
             .Callback<Domain.Task.Entities.Task>(task => createdTask = task);
 
         var taskService = new TaskService(taskRepoMock.Object, groupRepoMock.Object, userRepoMock.Object, unitOfWorkMock.Object, _mapper);
-        var createTaskRequest = new CreateTaskRequest("test", "nothing", DateTime.UtcNow, DateTime.UtcNow.AddHours(2));
+        var createTaskRequest = new CreateTaskDto("test", "nothing", DateTime.UtcNow, DateTime.UtcNow.AddHours(2));
         var result = await taskService.Create(createTaskRequest, user.Id);
         
         Assert.True(result.IsSuccess);
@@ -74,7 +75,7 @@ public class TaskServiceTests
             .Callback<Domain.Task.Entities.Task>(task => createdTask = task);
 
         var taskService = new TaskService(taskRepoMock.Object, groupRepoMock.Object, userRepoMock.Object, unitOfWorkMock.Object, _mapper);
-        var createTaskRequest = new CreateTaskRequest("test", "nothing", DateTime.UtcNow,DateTime.UtcNow.AddHours(2));
+        var createTaskRequest = new CreateTaskDto("test", "nothing", DateTime.UtcNow,DateTime.UtcNow.AddHours(2));
         
         var result = await taskService.CreateForGroup(createTaskRequest, firstUser.Id);
 
@@ -91,20 +92,17 @@ public class TaskOperationData : TheoryData<List<User>, Group>
 { 
     public TaskOperationData()
     {
-        var userResult =User.Create("Jan","Kowalski","j.kowalski@o2.pl","secret");
-        var userResult2 =User.Create("Homer","Simpson","h.simpson@o2.pl","secret");
-        var userResult3 =User.Create("Andre","Dre","a.dre@o2.pl","secret");
-        var userResult4 =User.Create("Filip","Kowalski","j.kowalski@o2.pl","secret");
-        var user = userResult.Value;
-        var user2 = userResult2.Value;
-        var user3 = userResult3.Value;
-        var user4 = userResult4.Value;
+        var user =User.Create("Jan","Kowalski","j.kowalski@o2.pl","secret");
+        var user2 =User.Create("Homer","Simpson","h.simpson@o2.pl","secret");
+        var user3 =User.Create("Andre","Dre","a.dre@o2.pl","secret");
+        var user4 =User.Create("Filip","Kowalski","j.kowalski@o2.pl","secret");
+       
         Assert.NotNull(user);
         Assert.NotNull(user2);
         Assert.NotNull(user3);
         Assert.NotNull(user4);
         
-        var group = Group.Create("Kowalscy", user.Id);
+        var group = Group.Create("Kowalscy", user);
         Assert.NotNull(group);
         
         var firstInvitation = group.Invite(user2, user.Id);

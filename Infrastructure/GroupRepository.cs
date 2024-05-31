@@ -28,17 +28,17 @@ public class GroupRepository(IApplicationDbContext dbContext, IUnitOfWork unitOf
 
     public Task<Group?> ReadGroupByMemberId(MemberId memberId)
     {
-        return dbContext.Groups.Include(group => group.Members).Where(group => group.Members.Any(member => member.Id.Equals(memberId))).SingleOrDefaultAsync();
+        return dbContext.Groups.Include(group => group.Members).ThenInclude(member => member.User).Where(group => group.Members.Any(member => member.Id.Equals(memberId))).SingleOrDefaultAsync();
     }
 
     public Task<Group?> ReadGroupByUserId(UserId userId)
     {
-        return dbContext.Groups.Include(group => group.Members).Where(group => group.Members.Any(member => member.UserId.Equals(userId))).SingleOrDefaultAsync();
+        return dbContext.Groups.Include(group => group.Members).ThenInclude(member => member.User).Where(group => group.Members.Any(member => member.User.Id.Equals(userId))).SingleOrDefaultAsync();
     }
 
     public async Task<List<Invitation>?> ReadInvitationsByUserId(UserId userId)
     {
-        return dbContext.Groups.Include(group => group.Invitations).SelectMany(group => group.Invitations.Where(invitation => invitation.UserId.Equals(userId)).ToList()).ToList();
+        return dbContext.Groups.Include(group => group.Invitations).AsNoTracking().SelectMany(group => group.Invitations.Where(invitation => invitation.User.Id.Equals(userId)).ToList()).ToList();
     }
 
     public void Update(Group group)

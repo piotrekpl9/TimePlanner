@@ -17,11 +17,6 @@ public class UserService(
     IUserRepository userRepository,
     IUnitOfWork unitOfWork) : IUserService
 {
-    public Task<List<UserDto>> ReadAllByCurrentGroup()
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task<Result> Delete(UserId id)
     {
         var user = await userRepository.GetById(id);
@@ -44,26 +39,26 @@ public class UserService(
         return Result.Success();
     }
 
-    public async Task<Result> UpdatePassword(UserId id, PasswordUpdateRequest passwordUpdateRequest)
+    public async Task<Result> UpdatePassword(UserId id, UpdatePasswordDto updatePasswordDto)
     {
         var user = await userRepository.GetById(id);
         if (user is null)
         {
             return Result.Failure(UserError.DoesntExists);
         } 
-        var oldPasswordCheck = passwordHasher.VerifyHashedPassword(null, user.Password, passwordUpdateRequest.OldPassword) ==
+        var oldPasswordCheck = passwordHasher.VerifyHashedPassword(null, user.Password, updatePasswordDto.OldPassword) ==
                  PasswordVerificationResult.Success;
         if (!oldPasswordCheck)
         {
             return Result.Failure(UserError.BadOldPassword);
         }
-        var newPasswordCheck =  passwordHasher.VerifyHashedPassword(null, user.Password, passwordUpdateRequest.NewPassword) !=
+        var newPasswordCheck =  passwordHasher.VerifyHashedPassword(null, user.Password, updatePasswordDto.NewPassword) !=
                                 PasswordVerificationResult.Success;
         if (!newPasswordCheck)
         {
             return Result.Failure(UserError.PasswordsIdentical);
         }
-        user.Password = passwordHasher.HashPassword(null, passwordUpdateRequest.NewPassword);
+        user.SetPassword(passwordHasher.HashPassword(null, updatePasswordDto.NewPassword));
         userRepository.Update(user);
 
         await unitOfWork.SaveChangesAsync();

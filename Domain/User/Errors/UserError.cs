@@ -7,6 +7,7 @@ public class UserError(string code, string description) : Error(code, descriptio
     public static UserError AlreadyDeleted => new UserError("UserAlreadyDeleted", "Cannot delete an already deleted user!");
     public static UserError AlreadyExists => new UserError("UserAlreadyExists", "Cannot add user with given email because one already exists!");
     public static UserError DoesntExists => new UserError("UserDoesntExists", "User doesn't exists!");
+    public static UserError IdDoesntMatch => new UserError("IdDoesntMatch", "Id doesnt match!");
     public static UserError InvalidEmailOrPassword => new UserError("BadEmailOrPassword", "Given email or password are invalid!");
     public static UserError NameEmpty => new UserError("UserNameEmpty", "Name cannot be empty!");
     public static UserError SurnameEmpty => new UserError("UserSurnameEmpty", "Surname cannot be empty!");

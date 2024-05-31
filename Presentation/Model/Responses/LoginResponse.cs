@@ -1,4 +1,4 @@
-namespace Application.Authentication.Model;
+namespace Presentation.Model.Responses;
 
 public class LoginResponse(string token, Guid userId)
 {

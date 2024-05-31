@@ -27,15 +27,12 @@ public class GroupConfiguration : IEntityTypeConfiguration<Group>
                 invitation.Property(i => i.Id).HasConversion(
                     invitationId => invitationId.Value,
                     guid => new InvitationId(guid));
-
-                invitation.Property(i => i.UserId).HasConversion(
-                    userId => userId.Value,
-                    guid => new UserId(guid));
                 
                 invitation.Property(i => i.GroupId).HasConversion(
                     groupId => groupId.Value,
                     guid => new GroupId(guid));
-
+                
+                invitation.HasOne<Domain.User.Entities.User>(i => i.User).WithMany();
             });
     }
 }

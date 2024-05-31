@@ -11,16 +11,16 @@ public sealed class Task : Entity<TaskId>
 {
     private readonly List<User> _assignedUsers;
     public IReadOnlyCollection<User> AssignedUsers => _assignedUsers.ToList();
-    public string Name { get; set; }
-    public string Notes { get; set; }
-    public TaskStatus Status { get; set; }
-    public User Creator { get; set; }
-    public GroupId? GroupId { get; set; }
-    public DateTime PlannedStartHour { get; set; }
-    public DateTime PlannedEndHour { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
-    public DateTime? DeletedAt { get; set; }
+    public string Name { get; private set; }
+    public string Notes { get; private set; }
+    public TaskStatus Status { get; private set; }
+    public User Creator { get; private set; }
+    public GroupId? GroupId { get; private set; }
+    public DateTime PlannedStartHour { get; private set; }
+    public DateTime PlannedEndHour { get; private set; }
+    public DateTime CreatedAt { get; private set; }
+    public DateTime? UpdatedAt { get; private set; }
+    public DateTime? DeletedAt { get; private set; }
     
     private Task(
         TaskId id, 

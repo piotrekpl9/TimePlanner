@@ -9,9 +9,9 @@ namespace Domain.Task.Services;
 
 public interface ITaskService
 { 
-    Task<Result<TaskDto>> CreateForGroup(CreateTaskRequest createRequest, UserId userId);
-    Task<Result<TaskDto>> Create(CreateTaskRequest createRequest, UserId userId);
-    Task<Result<TaskDto>> Update(TaskId id, UpdateTaskRequest newTask);
+    Task<Result<TaskDto>> CreateForGroup(CreateTaskDto createDto, UserId userId);
+    Task<Result<TaskDto>> Create(CreateTaskDto createDto, UserId userId);
+    Task<Result<TaskDto>> Update(TaskId id, UpdateTaskDto newTask);
     Task<bool> Delete(TaskId id);
 
 }
