@@ -19,7 +19,7 @@ public class GroupRepository(IApplicationDbContext dbContext, IUnitOfWork unitOf
 
     public async Task<Group?> Read(GroupId groupId)
     {
-        return await dbContext.Groups.Include(group => group.Members).Include(group => group.Invitations).SingleOrDefaultAsync(group => groupId.Equals(group.Id));
+        return await dbContext.Groups.Include(group => group.Members).ThenInclude(member => member.User).Include(group => group.Invitations).ThenInclude(invitation => invitation.User).SingleOrDefaultAsync(group => groupId.Equals(group.Id));
     }
 
     public async Task<Group?> ReadGroupByInvitationId(InvitationId invitationId)
@@ -34,7 +34,7 @@ public class GroupRepository(IApplicationDbContext dbContext, IUnitOfWork unitOf
 
     public Task<Group?> ReadGroupByUserId(UserId userId)
     {
-        return dbContext.Groups.Include(group => group.Members).ThenInclude(member => member.User).Where(group => group.Members.Any(member => member.User.Id.Equals(userId))).SingleOrDefaultAsync();
+        return dbContext.Groups.Include(group => group.Members).ThenInclude(member => member.User).Include(group => group.Invitations).ThenInclude(invitation => invitation.User).Where(group => group.Members.Any(member => member.User.Id.Equals(userId))).SingleOrDefaultAsync();
     }
 
     public async Task<List<Invitation>?> ReadInvitationsByUserId(UserId userId)
