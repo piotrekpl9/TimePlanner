@@ -22,7 +22,7 @@ using Task = Domain.Task.Entities.Task;
 
 public class TaskService(ITaskRepository taskRepository, IGroupRepository groupRepository, IUserRepository userRepository, IUnitOfWork unitOfWork, IMapper mapper) : ITaskService
 {
-    public async Task<Result<TaskDto>> CreateForGroup(CreateTaskRequest createRequest, UserId userId)
+    public async Task<Result<TaskDto>> CreateForGroup(CreateTaskDto createDto, UserId userId)
     {
         var creator = await userRepository.GetById(userId);
         if (creator is null)
@@ -36,9 +36,9 @@ public class TaskService(ITaskRepository taskRepository, IGroupRepository groupR
             return Result<TaskDto>.Failure(GroupError.GroupNotFound);
         }
         
-        var usersList = await userRepository.GetByIdList(group.Members.Select(member => member.UserId).ToList());
+        var usersList = await userRepository.GetByIdList(group.Members.Select(member => member.User.Id).ToList());
         
-        var task = Task.CreateForGroup(createRequest.Name, createRequest.Notes, TaskStatus.Pending, usersList, group.Id, creator, createRequest.PlannedStartHour.ToUniversalTime(),createRequest.PlannedEndHour.ToUniversalTime());
+        var task = Task.CreateForGroup(createDto.Name, createDto.Notes, TaskStatus.Pending, usersList, group.Id, creator, createDto.PlannedStartHour.ToUniversalTime(),createDto.PlannedEndHour.ToUniversalTime());
 
         await taskRepository.Add(task);
         await unitOfWork.SaveChangesAsync();
@@ -47,7 +47,7 @@ public class TaskService(ITaskRepository taskRepository, IGroupRepository groupR
         return Result<TaskDto>.Success(taskDto);
     }
 
-    public async Task<Result<TaskDto>> Create(CreateTaskRequest createRequest, UserId userId)
+    public async Task<Result<TaskDto>> Create(CreateTaskDto createDto, UserId userId)
     {
         var creator = await userRepository.GetById(userId);
         if (creator is null)
@@ -55,7 +55,7 @@ public class TaskService(ITaskRepository taskRepository, IGroupRepository groupR
             return Result<TaskDto>.Failure(UserError.DoesntExists);
         }
         
-        var task = Task.CreateForSelf(createRequest.Name, createRequest.Notes, TaskStatus.Pending, creator, createRequest.PlannedStartHour.ToUniversalTime(),createRequest.PlannedEndHour.ToUniversalTime());
+        var task = Task.CreateForSelf(createDto.Name, createDto.Notes, TaskStatus.Pending, creator, createDto.PlannedStartHour.ToUniversalTime(),createDto.PlannedEndHour.ToUniversalTime());
 
         await taskRepository.Add(task);
         await unitOfWork.SaveChangesAsync();
@@ -65,7 +65,7 @@ public class TaskService(ITaskRepository taskRepository, IGroupRepository groupR
         return Result<TaskDto>.Success(taskDto);
     }
 
-    public async Task<Result<TaskDto>> Update(TaskId id, UpdateTaskRequest newTask)
+    public async Task<Result<TaskDto>> Update(TaskId id, UpdateTaskDto newTask)
     {
         var task = await taskRepository.Read(id);
         if (task is null)

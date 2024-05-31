@@ -21,7 +21,7 @@ public class InvitationCreatorAuthorizationHandler(IGroupRepository groupReposit
             context.Fail();
             return;
         }
-        var member = group.Members.FirstOrDefault(m => m.UserId.Equals(userId));
+        var member = group.Members.FirstOrDefault(m => m.User.Id.Equals(userId));
         if (member is null)
         {
             context.Fail();

@@ -1,6 +1,7 @@
 using AutoMapper;
 using Domain.Group.Entities;
 using Domain.Group.Models.Dtos;
+using Domain.Group.Models.Enums;
 using Domain.Group.Models.ValueObjects;
 using Domain.Task.Models.Dtos;
 using Domain.Task.Models.ValueObjects;
@@ -16,9 +17,17 @@ public class AutoMapperProfile : Profile
     public AutoMapperProfile()
     {
         CreateMap<GroupId, Guid>();
-        CreateMap<Group, GroupDto>();
-        CreateMap<Invitation, InvitationDto>();
-        CreateMap<Member, MemberDto>();
+        CreateMap<Group, GroupDto>()
+            .ForMember(dto => dto.GroupId,opt => opt.MapFrom(group => group.Id.Value)).ForMember(dto => dto.Creator,opt => opt.MapFrom(group => group.Members.FirstOrDefault(member => member.Role == Role.Admin)));
+        CreateMap<Invitation, InvitationDto>()
+            .ForMember(dto => dto.InvitationId,opt => opt.MapFrom(invitation => invitation.Id.Value));
+        CreateMap<Member, MemberDto>()
+            .ForMember(
+                dto => dto.Name,
+                opt => opt.MapFrom(member => member.User.Name))
+            .ForMember(
+                dto => dto.Surname,
+                opt => opt.MapFrom(member => member.User.Surname));
         CreateMap<User, UserDto>();
         CreateMap<Task, TaskDto>();
     }

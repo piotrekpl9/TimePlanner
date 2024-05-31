@@ -22,26 +22,26 @@ public class GroupService(
     IUnitOfWork unitOfWork, 
     IMapper mapper) : IGroupService
 {
-    public async Task<Result<Group>> CreateGroup(string name, UserId userId)
+    public async Task<Result<GroupDto>> CreateGroup(string name, UserId userId)
     {
         var user = await userRepository.GetById(userId);
         if (user is null)
         {
-            return Result<Group>.Failure(UserError.DoesntExists);
+            return Result<GroupDto>.Failure(UserError.DoesntExists);
         }
         
         var exitingGroupCheck = await groupRepository.ReadGroupByUserId(userId);
 
         if (exitingGroupCheck is not null)
         {
-            return Result<Group>.Failure(GroupError.UserAlreadyInOtherGroup);
+            return Result<GroupDto>.Failure(GroupError.UserAlreadyInOtherGroup);
         }
         
-        var group = Group.Create(name, userId);
+        var group = Group.Create(name, user);
         await groupRepository.Add(group);
         await unitOfWork.SaveChangesAsync();
         
-        return Result<Group>.Success(group);
+        return Result<GroupDto>.Success(mapper.Map<GroupDto>(group));
     }
 
     private async Task<Result<Group>> ReadGroup(GroupId id)
@@ -125,7 +125,6 @@ public class GroupService(
     public async Task<Result> AcceptInvitation(InvitationId id)
     {
         var group = await groupRepository.ReadGroupByInvitationId(id);
-        
         if (group is null)
         {
             return Result<InvitationDto>.Failure(GroupError.GroupNotFound);
@@ -137,6 +136,12 @@ public class GroupService(
             return Result<InvitationDto>.Failure(GroupError.InvitationNotFound); 
         }
 
+        var user = await userRepository.GetById(invitation.User.Id);
+        if (user is null)
+        {
+            return Result.Failure(UserError.DoesntExists);
+        }
+        
         var result = group.AcceptInvitation(invitation);
       
         if (result.IsFailure)
@@ -152,11 +157,7 @@ public class GroupService(
         groupRepository.Update(group);
         
         var tasks = await taskRepository.ReadAllByGroupId(group.Id);
-        var user = await userRepository.GetById(result.Value.UserId);
-        if (user is null)
-        {
-            return Result.Failure(UserError.DoesntExists);
-        }
+      
         foreach (var task in tasks)
         {
             task.AssignUser(user);
@@ -195,31 +196,31 @@ public class GroupService(
         return Result.Success();
     }
 
-    public async Task<Result<Group>> DeleteGroup(GroupId id, UserId userId)
+    public async Task<Result<GroupDto>> DeleteGroup(GroupId id, UserId userId)
     {
         var group = await groupRepository.Read(id);
         if (group is null)
         {
-            return Result<Group>.Failure(GroupError.GroupNotFound);
+            return Result<GroupDto>.Failure(GroupError.GroupNotFound);
         }
 
-        var user = group.Members.FirstOrDefault(member => member.UserId.Equals(userId));
+        var user = group.Members.FirstOrDefault(member => member.User.Id.Equals(userId));
         if (user is not null && user.Role is not Role.Admin)
         {
-            return Result<Group>.Failure(GroupError.UserIsNotGroupOwner);
+            return Result<GroupDto>.Failure(GroupError.UserIsNotGroupOwner);
         }
         
         var res = group.Delete();
 
         if (res.IsFailure)
         {
-            return Result<Group>.Failure(res.Error);
+            return Result<GroupDto>.Failure(res.Error);
         }
 
         groupRepository.Update(group);
         await unitOfWork.SaveChangesAsync();
         
-        return Result<Group>.Success(group);
+        return Result<GroupDto>.Success(mapper.Map<GroupDto>(group));
     }
 
     public async Task<Result> DeleteMember(GroupId groupId, MemberId id)
@@ -243,7 +244,7 @@ public class GroupService(
             return Result.Failure(GroupError.GroupNotFound);
         }
         
-        var member = group.Members.FirstOrDefault(member => member.UserId.Equals(userId));
+        var member = group.Members.FirstOrDefault(member => member.User.Id.Equals(userId));
         if (member is null)
         {
             return Result.Failure(GroupError.UserIsNotMember);

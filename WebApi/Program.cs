@@ -7,6 +7,7 @@ using Presentation;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 builder.Services.AddDbContext<ApplicationDbContext>(
     o => o.UseNpgsql(builder.Configuration.GetConnectionString("Database"))

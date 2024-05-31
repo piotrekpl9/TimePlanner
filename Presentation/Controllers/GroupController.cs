@@ -1,31 +1,37 @@
+using System.Net.Mime;
 using System.Security.Claims;
 using Application.Authentication.Model;
-using Application.Group.Validators;
 using AutoMapper;
 using Domain.Group.Entities;
 using Domain.Group.Models;
+using Domain.Group.Models.Dtos;
 using Domain.Group.Models.Enums;
 using Domain.Group.Models.ValueObjects;
 using Domain.Group.Repositories;
 using Domain.Group.Services;
 using Domain.Shared;
+using Domain.Task.Models.Dtos;
 using Domain.User.ValueObjects;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Group = System.Text.RegularExpressions.Group;
+using Presentation.Model;
+using Presentation.Model.Requests;
+using Group = Domain.Group.Entities.Group;
 
 namespace Presentation.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class GroupController(IGroupService groupService, IGroupRepository groupRepository, IAuthorizationService authorizationService) : Controller
+public class GroupController(IGroupService groupService, IGroupRepository groupRepository, IAuthorizationService authorizationService, IMapper mapper) : Controller
 {
     [HttpPost("create")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest,Type = typeof(Error))]
-    public async Task<IResult> CreateGroup([FromBody] CreateGroupRequest createRequest, IValidator<CreateGroupRequest> validator)
+    public async Task<IResult> CreateGroup(
+        [FromBody] CreateGroupRequest createRequest, 
+        [FromServices] IValidator<CreateGroupRequest> validator)
     {   
         var validationResult = await validator.ValidateAsync(createRequest);
         if (!validationResult.IsValid)
@@ -44,7 +50,10 @@ public class GroupController(IGroupService groupService, IGroupRepository groupR
     [HttpPost("{groupGuid:guid}/invitations/create")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest,Type = typeof(Error))]
-    public async Task<IResult> InviteUser(Guid groupGuid, [FromBody] InviteUserRequest inviteUserRequest, IValidator<InviteUserRequest> validator)
+    public async Task<IResult> InviteUser(
+        Guid groupGuid, 
+        [FromBody] InviteUserRequest inviteUserRequest, 
+        [FromServices] IValidator<InviteUserRequest> validator)
     {   
         var validationResult = await validator.ValidateAsync(inviteUserRequest);
         if (!validationResult.IsValid)
@@ -146,8 +155,19 @@ public class GroupController(IGroupService groupService, IGroupRepository groupR
         return result.IsSuccess ? Results.Ok() : Results.BadRequest(result.Error);
     }
     
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK,Type = typeof(GroupDto))]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IResult> ReadGroup()
+    {
+        var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
+        var result = await groupRepository.ReadGroupByUserId(userId);
+        return result is not null ? Results.Ok(mapper.Map<GroupDto>(result)) : Results.NotFound();
+    }
+
+    
     [HttpGet("{groupGuid:guid}/")]
-    [ProducesResponseType(StatusCodes.Status200OK,Type = typeof(Group))]
+    [ProducesResponseType(StatusCodes.Status200OK,Type = typeof(GroupDto))]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IResult> ReadGroup(Guid groupGuid)
     {
@@ -160,21 +180,26 @@ public class GroupController(IGroupService groupService, IGroupRepository groupR
             return Results.Forbid();
         }
         var result = await groupRepository.Read(groupId);
-        return result is not null ? Results.Ok(result) : Results.NotFound();
+        return result is not null ? Results.Ok(mapper.Map<Group, GroupDto>(result)) : Results.NotFound();
     }
     
-    [HttpGet("user/pending-invitations")]
-    [ProducesResponseType(StatusCodes.Status200OK,Type = typeof(List<Invitation>))]
+    [HttpGet("pending-invitations")]
+    [ProducesResponseType(StatusCodes.Status200OK,Type = typeof(List<InvitationDto>))]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IResult> ReadUsersPendingInvitations(Guid groupGuid)
+    public async Task<IResult> ReadUsersPendingInvitations()
     { 
         var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
         var result = (await groupRepository.ReadInvitationsByUserId(userId))?.Where(invitation => invitation.Status is InvitationStatus.Pending).ToList();
-        return Results.Ok(result ?? []);
+        if (result is null)
+        {
+            return Results.NotFound();
+        }
+        List<InvitationDto> dtos = result.Select(mapper.Map<InvitationDto>).ToList();
+        return Results.Ok(dtos);
     }
     
     [HttpGet("{groupGuid:guid}/invitations")]
-    [ProducesResponseType(StatusCodes.Status200OK,Type = typeof(List<Invitation>))]
+    [ProducesResponseType(StatusCodes.Status200OK,Type = typeof(List<InvitationDto>))]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IResult> ReadGroupInvitations(Guid groupGuid)
     {
@@ -187,11 +212,16 @@ public class GroupController(IGroupService groupService, IGroupRepository groupR
             return Results.Forbid();
         }
         var result = await groupRepository.Read(groupId);
-        return result is not null ? Results.Ok(result.Invitations) : Results.NotFound();
+        if (result is null)
+        {
+            return Results.NotFound();
+        }
+        List<InvitationDto> dtos = result.Invitations.Select(mapper.Map<InvitationDto>).ToList();
+        return Results.Ok(dtos);
     }
     
     [HttpGet("{groupGuid:guid}/members")]
-    [ProducesResponseType(StatusCodes.Status200OK,Type = typeof(List<Member>))]
+    [ProducesResponseType(StatusCodes.Status200OK,Type = typeof(List<MemberDto>))]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IResult> ReadGroupMembers(Guid groupGuid)
     { 
@@ -205,7 +235,13 @@ public class GroupController(IGroupService groupService, IGroupRepository groupR
         }
         
         var result = await groupRepository.Read(groupId);
-        return result is not null ? Results.Ok(result.Members.ToList()) : Results.NotFound();
+        
+        if (result is null)
+        {
+            return Results.NotFound();
+        }
+        List<MemberDto> dtos = result.Members.Select(mapper.Map<MemberDto>).ToList();
+        return Results.Ok(dtos);
     }
     
     [HttpDelete("{groupGuid:guid}/members/{memberId:guid}")]
@@ -223,13 +259,13 @@ public class GroupController(IGroupService groupService, IGroupRepository groupR
     }
     
     [HttpDelete("{groupGuid:guid}/delete")]
-    [ProducesResponseType(StatusCodes.Status200OK,Type = typeof(Result<Group>))]
+    [ProducesResponseType(StatusCodes.Status200OK,Type = typeof(Result<GroupDto>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest,Type = typeof(Error))]
     public async Task<IResult> DeleteGroup(Guid groupGuid)
     { 
         var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
       
         var result = await groupService.DeleteGroup(new GroupId(groupGuid), userId);
-        return result.IsSuccess ? Results.Ok(result.Value) : Results.BadRequest(result.Error);
+        return result.IsSuccess ? Results.Ok(mapper.Map<GroupDto>(result.Value)) : Results.BadRequest(result.Error);
     }
 }

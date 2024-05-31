@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using Application.Common.Services;
+using FluentValidation;
 using Infrastructure.Authentication;
 using Infrastructure.Authorization;
 using Infrastructure.Authorization.Group;
@@ -29,7 +30,7 @@ public static class DependencyInjection
         services.Configure<JwtSettings>(jwtSettings);
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>(provider => dateTimeProvider);
         services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
-     
+        services.AddValidatorsFromAssembly(typeof(Presentation.DependencyInjection).Assembly);
         services.AddControllers(config =>
         {
             var policy = new AuthorizationPolicyBuilder()
@@ -68,7 +69,6 @@ public static class DependencyInjection
                 ValidateIssuerSigningKey = true
             };
         });
-
         services.AddAuthorization();
         return services;
     }

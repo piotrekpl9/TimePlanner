@@ -10,7 +10,7 @@ public sealed class User : Entity<UserId>
     public string Name { get; private set; }
     public string Surname { get; private set; }
     public string Email { get; private set; }
-    public string Password { get; set; }
+    public string Password { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
     public DateTime? DeletedAt { get; private set; }
@@ -34,14 +34,14 @@ public sealed class User : Entity<UserId>
         DeletedAt = deletedAt;
     }
 
-    public static Result<User> Create(
+    public static User Create(
         string name,
         string surname,
         string email, 
         string password
         )
     {
-        return Result<User>.Success(new User(
+        return new User(
             new UserId(Guid.NewGuid()),
             name,
             surname, 
@@ -50,9 +50,13 @@ public sealed class User : Entity<UserId>
             DateTime.UtcNow,
             null,
             null
-            ));
+            );
     }
-   
+
+    public void SetPassword(string password)
+    {
+        Password = password;
+    }
     public Result Delete()
     {
         if (DeletedAt.HasValue)

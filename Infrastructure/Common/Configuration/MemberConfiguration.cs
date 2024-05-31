@@ -16,15 +16,11 @@ public class MemberConfiguration : IEntityTypeConfiguration<Member>
             memberId => memberId.Value,
             guid => new MemberId(guid));
         
-        builder.Property(member => member.UserId).HasConversion(
-            userId => userId.Value,
-            guid => new UserId(guid));
-        
         builder.Property(member => member.GroupId).HasConversion(
             groupId => groupId.Value,
             guid => new GroupId(guid));
         
-        builder.HasOne<Domain.User.Entities.User>().WithOne();
+        builder.HasOne<Domain.User.Entities.User>(member => member.User).WithOne().HasForeignKey<Member>(m => m.UserId);
             
       
     }
