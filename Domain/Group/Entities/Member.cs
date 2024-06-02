@@ -1,3 +1,4 @@
+using System.Threading.Tasks.Dataflow;
 using Domain.Group.Models.ValueObjects;
 using Domain.User.ValueObjects;
 
@@ -40,5 +41,10 @@ public sealed class Member : Entity<MemberId>
     public static Member CreateOwner(GroupId groupId, User user)
     {
         return new Member(new MemberId(Guid.NewGuid()), user.Id, user, groupId, Role.Admin, DateTime.UtcNow, null, null);
+    }
+
+    public void SetRole(Role role)
+    {
+        Role = role;
     }
 }

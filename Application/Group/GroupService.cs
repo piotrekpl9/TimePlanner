@@ -232,7 +232,8 @@ public class GroupService(
         }
         
         var result = group.RemoveMember(id);
-
+        groupRepository.Update(group);
+        await unitOfWork.SaveChangesAsync();
         return result;
     }
 
@@ -249,7 +250,11 @@ public class GroupService(
         {
             return Result.Failure(GroupError.UserIsNotMember);
         }
+        var result = group.RemoveMember(member.Id);
 
-        return group.RemoveMember(member.Id);
+        
+        groupRepository.Update(group);
+        await unitOfWork.SaveChangesAsync();
+        return result;
     }
 }

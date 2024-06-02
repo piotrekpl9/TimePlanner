@@ -7,10 +7,6 @@ public class InviteUserRequest
         Email = email;
     }
 
-    public InviteUserRequest()
-    {
-        
-    }
     
-    public string Email { get; }
+    public string Email { get; set; }
 }

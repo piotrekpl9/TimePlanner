@@ -76,18 +76,15 @@ public class GroupController(IGroupService groupService, IGroupRepository groupR
         return result.IsSuccess ? Results.Ok() : Results.BadRequest(result.Error);
     }
      
-    [HttpPost("{groupGuid:guid}/invitations/{id:guid}/accept")]
+    [HttpPost("invitations/{id:guid}/accept")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest,Type = typeof(Error))]
-    public async Task<IResult> AcceptInvitation(Guid groupGuid, Guid id)
+    public async Task<IResult> AcceptInvitation(Guid id)
     { 
-        var memberAuthorizationResult = await authorizationService
-            .AuthorizeAsync(User, new GroupId(groupGuid),"GroupAccessPolicy");
-
         var invitationTargetAuthorizationResult = await authorizationService
             .AuthorizeAsync(User, new InvitationId(id),"InvitationOperationPolicy");
         
-        if (!memberAuthorizationResult.Succeeded || !invitationTargetAuthorizationResult.Succeeded)
+        if (!invitationTargetAuthorizationResult.Succeeded)
         {
             return Results.Forbid();
         }
@@ -97,18 +94,16 @@ public class GroupController(IGroupService groupService, IGroupRepository groupR
     }
     
     
-    [HttpPost("{groupGuid:guid}/invitations/{id:guid}/reject")]
+    [HttpPost("invitations/{id:guid}/reject")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest,Type = typeof(Error))]
-    public async Task<IResult> RejectInvitation(Guid groupGuid, Guid id)
+    public async Task<IResult> RejectInvitation(Guid id)
     { 
-        var memberAuthorizationResult = await authorizationService
-            .AuthorizeAsync(User, new GroupId(groupGuid),"GroupAccessPolicy");
-
+     
         var invitationTargetAuthorizationResult = await authorizationService
             .AuthorizeAsync(User, new InvitationId(id),"InvitationOperationPolicy");
         
-        if (!memberAuthorizationResult.Succeeded || !invitationTargetAuthorizationResult.Succeeded)
+        if (!invitationTargetAuthorizationResult.Succeeded)
         {
             return Results.Forbid();
         }
@@ -125,7 +120,7 @@ public class GroupController(IGroupService groupService, IGroupRepository groupR
         var memberAuthorizationResult = await authorizationService
             .AuthorizeAsync(User, new GroupId(groupGuid),"GroupAccessPolicy");
         var invitationCancelAuthorizationResult = await authorizationService
-            .AuthorizeAsync(User, new GroupId(groupGuid),"InvitationCancelPolicy");
+            .AuthorizeAsync(User, new InvitationId(id),"InvitationCancelPolicy");
 
         if (!memberAuthorizationResult.Succeeded || !invitationCancelAuthorizationResult.Succeeded)
         {
@@ -247,10 +242,10 @@ public class GroupController(IGroupService groupService, IGroupRepository groupR
     [HttpDelete("{groupGuid:guid}/members/{memberId:guid}")]
     public async Task<IResult> DeleteGroupMember(Guid groupGuid,Guid memberId)
     { 
-        var memberAuthorizationResult = await authorizationService
-            .AuthorizeAsync(User, new GroupId(groupGuid),"GroupAccessPolicy");
+        var adminAuthorizationResult = await authorizationService
+            .AuthorizeAsync(User, new GroupId(groupGuid),"GroupAdminAccessPolicy");
         
-        if (!memberAuthorizationResult.Succeeded )
+        if (!adminAuthorizationResult.Succeeded )
         {
             return Results.Forbid();
         }
@@ -263,6 +258,13 @@ public class GroupController(IGroupService groupService, IGroupRepository groupR
     [ProducesResponseType(StatusCodes.Status400BadRequest,Type = typeof(Error))]
     public async Task<IResult> DeleteGroup(Guid groupGuid)
     { 
+        var adminAuthorizationResult = await authorizationService
+            .AuthorizeAsync(User, new GroupId(groupGuid),"GroupAdminAccessPolicy");
+        
+        if (!adminAuthorizationResult.Succeeded )
+        {
+            return Results.Forbid();
+        }
         var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
       
         var result = await groupService.DeleteGroup(new GroupId(groupGuid), userId);

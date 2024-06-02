@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Domain.Group.Models.Enums;
 using Domain.Group.Models.ValueObjects;
 using Domain.Group.Repositories;
 using Domain.User.ValueObjects;
@@ -7,11 +8,11 @@ using Microsoft.AspNetCore.Authorization;
 namespace Infrastructure.Authorization.Group;
 
 using Task = System.Threading.Tasks.Task;
-public class GroupMemberAuthorizationHandler(IGroupRepository groupRepository)
-    : AuthorizationHandler<IsGroupMemberRequirement, GroupId>
+public class GroupAdminAuthorizationHandler(IGroupRepository groupRepository)
+    : AuthorizationHandler<IsGroupAdminRequirement, GroupId>
 {
 
-    protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, IsGroupMemberRequirement requirement, GroupId groupId)
+    protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, IsGroupAdminRequirement requirement, GroupId groupId)
     {
         
         var userId = new UserId(Guid.Parse( context.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
@@ -21,9 +22,14 @@ public class GroupMemberAuthorizationHandler(IGroupRepository groupRepository)
             context.Fail();
             return;
         }
-        if (group.Members.Any(member => member.User.Id.Equals(userId)))
+
+        var member = group.Members.FirstOrDefault(member => member.User.Id.Equals(userId));
+        if (member is not null)
         {
-            context.Succeed(requirement);
+            if (member.Role == Role.Admin)
+            {
+                context.Succeed(requirement);
+            }
         }
     }
 }

@@ -109,8 +109,19 @@ public sealed class Group : AggregateRoot<GroupId>
         {
             return Result.Failure(GroupError.MemberNotFound);
         }
-
+        
         var result = _members.Remove(member);
+        
+        
+        if (member.Role == Role.Admin)
+        {
+            if (Members.All(m => m.Role != Role.Admin))
+            {
+                var firstMember = Members.FirstOrDefault();
+                firstMember?.SetRole(Role.Admin);
+            }
+        }
+        
         return result ? Result.Success() : Result.Failure(GroupError.FailedToRemoveMember);
     }
     public Result Delete()

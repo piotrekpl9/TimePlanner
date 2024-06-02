@@ -19,7 +19,7 @@ public class AutoMapperProfile : Profile
         CreateMap<GroupId, Guid>();
         CreateMap<Group, GroupDto>()
             .ForMember(dto => dto.GroupId,opt => opt.MapFrom(group => group.Id.Value)).ForMember(dto => dto.Creator,opt => opt.MapFrom(group => group.Members.FirstOrDefault(member => member.Role == Role.Admin)));
-        CreateMap<Invitation, InvitationDto>()
+        CreateMap<Invitation, InvitationDto>().ForMember(dto => dto.TargetEmail,opt => opt.MapFrom(invitation => invitation.User.Email))
             .ForMember(dto => dto.InvitationId,opt => opt.MapFrom(invitation => invitation.Id.Value));
         CreateMap<Member, MemberDto>()
             .ForMember(
@@ -29,6 +29,7 @@ public class AutoMapperProfile : Profile
                 dto => dto.Surname,
                 opt => opt.MapFrom(member => member.User.Surname));
         CreateMap<User, UserDto>();
-        CreateMap<Task, TaskDto>();
+        CreateMap<Task, TaskDto>().ForMember(dto => dto.TaskId,expression => expression.MapFrom(task => task.Id.Value)).ForMember(dto => dto.GroupId,
+            opt => opt.MapFrom(task => task.GroupId != null ? task.GroupId!.Value : (Guid?)null));
     }
 }
