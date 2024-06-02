@@ -242,10 +242,10 @@ public class GroupController(IGroupService groupService, IGroupRepository groupR
     [HttpDelete("{groupGuid:guid}/members/{memberId:guid}")]
     public async Task<IResult> DeleteGroupMember(Guid groupGuid,Guid memberId)
     { 
-        var memberAuthorizationResult = await authorizationService
-            .AuthorizeAsync(User, new GroupId(groupGuid),"GroupAccessPolicy");
+        var adminAuthorizationResult = await authorizationService
+            .AuthorizeAsync(User, new GroupId(groupGuid),"GroupAdminAccessPolicy");
         
-        if (!memberAuthorizationResult.Succeeded )
+        if (!adminAuthorizationResult.Succeeded )
         {
             return Results.Forbid();
         }
@@ -258,6 +258,13 @@ public class GroupController(IGroupService groupService, IGroupRepository groupR
     [ProducesResponseType(StatusCodes.Status400BadRequest,Type = typeof(Error))]
     public async Task<IResult> DeleteGroup(Guid groupGuid)
     { 
+        var adminAuthorizationResult = await authorizationService
+            .AuthorizeAsync(User, new GroupId(groupGuid),"GroupAdminAccessPolicy");
+        
+        if (!adminAuthorizationResult.Succeeded )
+        {
+            return Results.Forbid();
+        }
         var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
       
         var result = await groupService.DeleteGroup(new GroupId(groupGuid), userId);

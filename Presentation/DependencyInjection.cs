@@ -42,6 +42,8 @@ public static class DependencyInjection
         services.AddAuthorizationBuilder()
                     .AddPolicy("GroupAccessPolicy", policy =>
                 policy.Requirements.Add(new IsGroupMemberRequirement()))
+                    .AddPolicy("GroupAdminAccessPolicy", policy =>
+                        policy.Requirements.Add(new IsGroupAdminRequirement()))
                     .AddPolicy("InvitationOperationPolicy", policy =>
                 policy.Requirements.Add(new IsInvitationTargetRequirement()))
                     .AddPolicy("InvitationCancelPolicy", policy =>

@@ -31,6 +31,7 @@ public static class DependencyInjection
         services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
         services.AddScoped<IAuthorizationHandler, GroupMemberAuthorizationHandler>();
+        services.AddScoped<IAuthorizationHandler, GroupAdminAuthorizationHandler>();
         services.AddScoped<IAuthorizationHandler, InvitationCreatorAuthorizationHandler>();
         services.AddScoped<IAuthorizationHandler, InvitationTargetAuthorizationHandler>();
         services.AddScoped<IAuthorizationHandler, TaskAssignedAuthorizationHandler>();
