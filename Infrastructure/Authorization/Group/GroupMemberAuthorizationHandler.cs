@@ -16,7 +16,12 @@ public class GroupMemberAuthorizationHandler(IGroupRepository groupRepository)
         
         var userId = new UserId(Guid.Parse( context.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
         var group = await groupRepository.Read(groupId);
-        if (group != null && group.Members.Any(member => member.User.Id.Equals(userId)))
+        if (group is null)
+        {
+            context.Fail();
+            return;
+        }
+        if (group.Members.Any(member => member.User.Id.Equals(userId)))
         {
             context.Succeed(requirement);
         }

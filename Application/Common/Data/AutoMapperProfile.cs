@@ -29,6 +29,7 @@ public class AutoMapperProfile : Profile
                 dto => dto.Surname,
                 opt => opt.MapFrom(member => member.User.Surname));
         CreateMap<User, UserDto>();
-        CreateMap<Task, TaskDto>();
+        CreateMap<Task, TaskDto>().ForMember(dto => dto.TaskId,expression => expression.MapFrom(task => task.Id.Value)).ForMember(dto => dto.GroupId,
+            opt => opt.MapFrom(task => task.GroupId != null ? task.GroupId!.Value : (Guid?)null));
     }
 }

@@ -7,7 +7,12 @@ using TaskStatus = Domain.Task.Models.Enums.TaskStatus;
 
 public class TaskDto
 {
+    public TaskDto()
+    {
+        
+    }
     public TaskDto(
+        Guid taskId,
         string name, 
         string notes, 
         string status, 
@@ -16,8 +21,9 @@ public class TaskDto
         DateTime plannedStartHour, 
         DateTime plannedEndHour, 
         DateTime createdAt
-    ) 
+    )
     {
+        TaskId = taskId;
         Name = name;
         Notes = notes;
         Status = status;
@@ -27,6 +33,7 @@ public class TaskDto
         PlannedEndHour = plannedEndHour;
         CreatedAt = createdAt;
     }
+    public Guid TaskId { get; private set; }
     public string Name { get; private set; }
     public string Notes { get; private set; }
     public string Status { get; private set; }

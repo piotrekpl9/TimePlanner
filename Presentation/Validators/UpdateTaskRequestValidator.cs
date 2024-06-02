@@ -1,9 +1,10 @@
 using Domain.Task.Models.Dtos;
 using FluentValidation;
+using Presentation.Model.Requests;
 
 namespace Presentation.Validators;
 
-public sealed class UpdateTaskRequestValidator : AbstractValidator<UpdateTaskDto>
+public sealed class UpdateTaskRequestValidator : AbstractValidator<UpdateTaskRequest>
 {
     public UpdateTaskRequestValidator()
     {
