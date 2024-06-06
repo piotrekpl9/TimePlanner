@@ -8,6 +8,7 @@ using Domain.Task.Models;
 using Domain.Task.Models.Dtos;
 using Domain.Task.Repositories;
 using Domain.User.Repositories;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace Application.Tests;
@@ -37,13 +38,14 @@ public class TaskServiceTests
         var unitOfWorkMock = new Mock<IUnitOfWork>();
         var groupRepoMock = new Mock<IGroupRepository>();
         var userRepoMock = new Mock<IUserRepository>();
+        var loggerMock = new Mock<ILogger<TaskService>>();
         userRepoMock.Setup(repository => repository.GetById(user.Id)).ReturnsAsync(user);
       
         Domain.Task.Entities.Task createdTask = null;
         taskRepoMock.Setup(repo => repo.Add(It.IsAny<Domain.Task.Entities.Task>()))
             .Callback<Domain.Task.Entities.Task>(task => createdTask = task);
 
-        var taskService = new TaskService(taskRepoMock.Object, groupRepoMock.Object, userRepoMock.Object, unitOfWorkMock.Object, _mapper);
+        var taskService = new TaskService(taskRepoMock.Object, groupRepoMock.Object, userRepoMock.Object, unitOfWorkMock.Object, _mapper, loggerMock.Object);
         var createTaskRequest = new CreateTaskDto("test", "nothing", DateTime.UtcNow, DateTime.UtcNow.AddHours(2));
         var result = await taskService.Create(createTaskRequest, user.Id);
         
@@ -62,7 +64,7 @@ public class TaskServiceTests
 
         var groupRepoMock = new Mock<IGroupRepository>();
         groupRepoMock.Setup(repository => repository.ReadGroupByUserId(firstUser.Id)).ReturnsAsync(group);
-    
+        var loggerMock = new Mock<ILogger<TaskService>>();
         var userRepoMock = new Mock<IUserRepository>();
         userRepoMock.Setup(repository => repository.GetById(firstUser.Id)).ReturnsAsync(firstUser);
         userRepoMock.Setup(repository => repository.GetByIdList(groupMemberIds)).ReturnsAsync(users.Where(user => groupMemberIds.Contains(user.Id)).ToList());
@@ -74,7 +76,7 @@ public class TaskServiceTests
         taskRepoMock.Setup(repo => repo.Add(It.IsAny<Domain.Task.Entities.Task>()))
             .Callback<Domain.Task.Entities.Task>(task => createdTask = task);
 
-        var taskService = new TaskService(taskRepoMock.Object, groupRepoMock.Object, userRepoMock.Object, unitOfWorkMock.Object, _mapper);
+        var taskService = new TaskService(taskRepoMock.Object, groupRepoMock.Object, userRepoMock.Object, unitOfWorkMock.Object, _mapper, loggerMock.Object);
         var createTaskRequest = new CreateTaskDto("test", "nothing", DateTime.UtcNow,DateTime.UtcNow.AddHours(2));
         
         var result = await taskService.CreateForGroup(createTaskRequest, firstUser.Id);
