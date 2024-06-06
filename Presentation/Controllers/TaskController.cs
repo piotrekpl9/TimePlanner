@@ -37,7 +37,7 @@ public class TaskController(ITaskService taskService, ITaskRepository taskReposi
         var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
 
         var result = await taskService.Create(mapper.Map<CreateTaskDto>(createRequest), userId);
-        return result.IsSuccess ? Results.Ok() : Results.BadRequest(result.Error);
+        return result.IsSuccess ? Results.Ok(result.Value) : Results.BadRequest(result.Error);
 
     }
     
@@ -56,7 +56,7 @@ public class TaskController(ITaskService taskService, ITaskRepository taskReposi
         var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
 
         var result = await taskService.CreateForGroup(mapper.Map<CreateTaskDto>(createRequest), userId);
-        return result.IsSuccess ? Results.Ok() : Results.BadRequest(result.Error);
+        return result.IsSuccess ? Results.Ok(result.Value) : Results.BadRequest(result.Error);
 
     }
     
@@ -140,7 +140,9 @@ public class TaskController(ITaskService taskService, ITaskRepository taskReposi
 
     }
     
-    [HttpDelete("{id:guid}")]
+    [HttpDelete("{id:guid}")] 
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest,Type = typeof(Error))]
     public async Task<IResult> DeleteTask(Guid id)
     {   
         var taskId = new TaskId(id);
@@ -153,7 +155,7 @@ public class TaskController(ITaskService taskService, ITaskRepository taskReposi
         }
         
         var result = await taskService.Delete(new TaskId(id));
-        return result ? Results.Ok() : Results.BadRequest();
+        return result.IsSuccess ? Results.Ok() : Results.BadRequest(result.Error);
 
     }
 }

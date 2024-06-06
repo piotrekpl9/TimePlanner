@@ -1,9 +1,12 @@
-namespace Domain.Task.Models.Enums;
+using System.Text.Json.Serialization;
 
+namespace Domain.Task.Models.Enums;
+[JsonConverter(typeof(JsonStringEnumConverter<TaskStatus>))]
 public enum TaskStatus
 {
-    Pending,
+    NotStarted,
     InProgress,
-    Done,
-    Missed
+    Completed,
+    OnHold,
+    Cancelled,
 }

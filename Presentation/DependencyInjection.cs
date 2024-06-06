@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using System.Text.Json.Serialization;
 using Application.Common.Services;
 using FluentValidation;
 using Infrastructure.Authentication;
@@ -37,7 +38,13 @@ public static class DependencyInjection
                 .RequireAuthenticatedUser()
                 .Build();
             config.Filters.Add(new AuthorizeFilter(policy));
+
+        }).AddJsonOptions(options =>
+        {
+            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
         });
+        
         
         services.AddAuthorizationBuilder()
                     .AddPolicy("GroupAccessPolicy", policy =>

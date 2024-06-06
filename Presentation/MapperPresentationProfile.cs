@@ -16,7 +16,7 @@ public class MapperPresentationProfile : Profile
     {
         CreateMap<CreateGroupRequest, CreateGroupDto>();
         CreateMap<CreateTaskRequest, CreateTaskDto>();
-        CreateMap<InviteUserRequest, InviteUserDto>();
+        CreateMap<InviteUserRequest, CreateInvitationDto>();
         CreateMap<LoginRequest, LoginUserDto>();
         CreateMap<PasswordUpdateRequest, UpdatePasswordDto>();
         CreateMap<RegisterRequest, RegisterUserDto>();

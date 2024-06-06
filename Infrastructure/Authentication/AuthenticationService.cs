@@ -31,7 +31,7 @@ public class AuthenticationService(
         }
         catch (Exception e)
         {
-            return Result<RegisterResultDto>.Failure(new Error("error" ,e.Message));
+            return Result<RegisterResultDto>.Failure(new Error("AuthError" , "AUTH_X",e.Message));
         }
     }
 

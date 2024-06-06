@@ -22,6 +22,7 @@ public class AutoMapperProfile : Profile
         CreateMap<Invitation, InvitationDto>().ForMember(dto => dto.TargetEmail,opt => opt.MapFrom(invitation => invitation.User.Email))
             .ForMember(dto => dto.InvitationId,opt => opt.MapFrom(invitation => invitation.Id.Value));
         CreateMap<Member, MemberDto>()
+            .ForMember(dto => dto.MemberId,opt => opt.MapFrom(member => member.Id.Value))
             .ForMember(
                 dto => dto.Name,
                 opt => opt.MapFrom(member => member.User.Name))

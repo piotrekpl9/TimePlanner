@@ -8,6 +8,7 @@ using Domain.Group.Repositories;
 using Domain.Shared;
 using Domain.Task.Repositories;
 using Domain.User.Repositories;
+using Microsoft.Extensions.Logging;
 using Moq;
 namespace Application.Tests;
 using Group = Domain.Group.Entities.Group;
@@ -31,6 +32,7 @@ public class GroupServiceTests
     {
         var group = Group.Create("Rodmanowie", user);
         var groupRepoMock = new Mock<IGroupRepository>();
+        var loggerMock = new Mock<ILogger<GroupService>>();
         groupRepoMock.Setup(repository => repository.ReadGroupByUserId(user.Id)).ReturnsAsync(group);
         var userRepoMock = new Mock<IUserRepository>();
         userRepoMock.Setup(repository => repository.GetById(user.Id)).ReturnsAsync(user);
@@ -38,7 +40,7 @@ public class GroupServiceTests
         var taskRepoMock = new Mock<ITaskRepository>();
         var unitOfWorkMock = new Mock<IUnitOfWork>();
         
-        var groupService = new GroupService(groupRepoMock.Object,userRepoMock.Object, taskRepoMock.Object, unitOfWorkMock.Object, _mapper);
+        var groupService = new GroupService(groupRepoMock.Object,userRepoMock.Object, taskRepoMock.Object, unitOfWorkMock.Object, loggerMock.Object, _mapper);
 
         var result = await groupService.CreateGroup("Kowalscy", user.Id);
         
@@ -52,6 +54,7 @@ public class GroupServiceTests
     {
         var group = Group.Create("Rodmanowie", user);
         var groupRepoMock = new Mock<IGroupRepository>();
+        var loggerMock = new Mock<ILogger<GroupService>>();
         groupRepoMock.Setup(repository => repository.ReadGroupByUserId(user.Id)).ReturnsAsync(group);
         var userRepoMock = new Mock<IUserRepository>();
         userRepoMock.Setup(repository => repository.GetById(user.Id)).ReturnsAsync(user);
@@ -60,7 +63,7 @@ public class GroupServiceTests
         var taskRepoMock = new Mock<ITaskRepository>();
         var unitOfWorkMock = new Mock<IUnitOfWork>();
         
-        var groupService = new GroupService(groupRepoMock.Object,userRepoMock.Object, taskRepoMock.Object, unitOfWorkMock.Object, _mapper);
+        var groupService = new GroupService(groupRepoMock.Object,userRepoMock.Object, taskRepoMock.Object, unitOfWorkMock.Object, loggerMock.Object, _mapper);
 
         var result = await groupService.InviteUserByEmail(user.Email, group.Id, user.Id);
         

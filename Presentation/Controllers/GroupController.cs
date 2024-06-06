@@ -42,7 +42,7 @@ public class GroupController(IGroupService groupService, IGroupRepository groupR
         var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
      
         var result = await groupService.CreateGroup(createRequest.Name, userId);
-        return result.IsSuccess ? Results.Ok() : Results.BadRequest(result.Error);
+        return result.IsSuccess ? Results.Ok(result.Value) : Results.BadRequest(result.Error);
       
             
     }

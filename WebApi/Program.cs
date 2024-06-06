@@ -4,7 +4,13 @@ using Infrastructure;
 using Infrastructure.Common;
 using Microsoft.EntityFrameworkCore;
 using Presentation;
+using Serilog;
+using WebApi.Middleware;
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, configuration) => configuration.ReadFrom.Configuration(context.Configuration));
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -29,6 +35,8 @@ if (app.Environment.IsDevelopment())
 
 
 app.UseHttpsRedirection();
+app.UseMiddleware<RequestLogContextMiddleware>();
+app.UseSerilogRequestLogging();
 
 app.MapControllers();
 app.Run();
