@@ -82,22 +82,22 @@ public class TaskService(ITaskRepository taskRepository, IGroupRepository groupR
         return Result<TaskDto>.Success(taskDto);
     }
 
-    public async Task<bool> Delete(TaskId id)
+    public async Task<Result> Delete(TaskId id)
     {
         var task = await taskRepository.Read(id);
         if (task is null)
         {
-            return false;
+            return Result.Failure(TaskError.TaskNotFound);
         }
 
         var result = task.Delete();
         if(result.IsFailure)
         {
-            return false;
+            return result;
         }
         
         taskRepository.Update(task);
         await unitOfWork.SaveChangesAsync();
-        return true;
+        return result;
     }
 }

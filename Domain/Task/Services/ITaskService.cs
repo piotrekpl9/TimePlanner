@@ -12,6 +12,6 @@ public interface ITaskService
     Task<Result<TaskDto>> CreateForGroup(CreateTaskDto createDto, UserId userId);
     Task<Result<TaskDto>> Create(CreateTaskDto createDto, UserId userId);
     Task<Result<TaskDto>> Update(TaskId id, UpdateTaskDto newTask);
-    Task<bool> Delete(TaskId id);
+    Task<Result> Delete(TaskId id);
 
 }
