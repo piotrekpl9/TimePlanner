@@ -4,8 +4,9 @@ namespace Domain.Group.Models.Dtos;
 
 public class MemberDto
 {
-    public MemberDto(string name, string surname, Role role, DateTime createdAt)
+    public MemberDto(Guid memberId,string name, string surname, Role role, DateTime createdAt)
     {
+        MemberId = memberId;
         Name = name;
         Surname = surname;
         Role = role;
@@ -16,6 +17,8 @@ public class MemberDto
     {
         
     }
+
+    public Guid MemberId { get; set; }
     public string Name { get; set; }
     public string Surname { get; set; }
     public Role Role { get;  set; }

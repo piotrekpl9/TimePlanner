@@ -37,7 +37,7 @@ public class TaskController(ITaskService taskService, ITaskRepository taskReposi
         var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
 
         var result = await taskService.Create(mapper.Map<CreateTaskDto>(createRequest), userId);
-        return result.IsSuccess ? Results.Ok() : Results.BadRequest(result.Error);
+        return result.IsSuccess ? Results.Ok(result.Value) : Results.BadRequest(result.Error);
 
     }
     
@@ -56,7 +56,7 @@ public class TaskController(ITaskService taskService, ITaskRepository taskReposi
         var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
 
         var result = await taskService.CreateForGroup(mapper.Map<CreateTaskDto>(createRequest), userId);
-        return result.IsSuccess ? Results.Ok() : Results.BadRequest(result.Error);
+        return result.IsSuccess ? Results.Ok(result.Value) : Results.BadRequest(result.Error);
 
     }
     

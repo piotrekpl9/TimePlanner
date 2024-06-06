@@ -1,3 +1,6 @@
+using System.Text.Json.Serialization;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
+
 namespace Presentation.Model.Requests;
 using TaskStatus = Domain.Task.Models.Enums.TaskStatus;
 
@@ -14,6 +17,7 @@ public class UpdateTaskRequest
     
     public string? Name { get; private set; }
     public string? Notes { get; private set; }
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public TaskStatus? Status { get; private set; }
     public DateTime? PlannedStartHour { get; private set; }
     public DateTime? PlannedEndHour { get; private set; }
