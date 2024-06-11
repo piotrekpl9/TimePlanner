@@ -33,7 +33,7 @@ public class GroupServiceTests
         var group = Group.Create("Rodmanowie", user);
         var groupRepoMock = new Mock<IGroupRepository>();
         var loggerMock = new Mock<ILogger<GroupService>>();
-        groupRepoMock.Setup(repository => repository.ReadGroupByUserId(user.Id)).ReturnsAsync(group);
+        groupRepoMock.Setup(repository => repository.GetGroupByUserId(user.Id)).ReturnsAsync(group);
         var userRepoMock = new Mock<IUserRepository>();
         userRepoMock.Setup(repository => repository.GetById(user.Id)).ReturnsAsync(user);
         
@@ -55,7 +55,7 @@ public class GroupServiceTests
         var group = Group.Create("Rodmanowie", user);
         var groupRepoMock = new Mock<IGroupRepository>();
         var loggerMock = new Mock<ILogger<GroupService>>();
-        groupRepoMock.Setup(repository => repository.ReadGroupByUserId(user.Id)).ReturnsAsync(group);
+        groupRepoMock.Setup(repository => repository.GetGroupByUserId(user.Id)).ReturnsAsync(group);
         var userRepoMock = new Mock<IUserRepository>();
         userRepoMock.Setup(repository => repository.GetById(user.Id)).ReturnsAsync(user);
         userRepoMock.Setup(repository => repository.GetByEmail(user.Email)).ReturnsAsync(user);

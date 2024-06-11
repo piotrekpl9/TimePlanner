@@ -35,7 +35,7 @@ public class GroupService(
             return Result<GroupDto>.Failure(UserError.DoesntExists);
         }
         
-        var exitingGroupCheck = await groupRepository.ReadGroupByUserId(userId);
+        var exitingGroupCheck = await groupRepository.GetGroupByUserId(userId);
 
         if (exitingGroupCheck is not null)
         {
@@ -50,9 +50,9 @@ public class GroupService(
         return Result<GroupDto>.Success(mapper.Map<GroupDto>(group));
     }
 
-    private async Task<Result<Group>> ReadGroup(GroupId id)
+    private async Task<Result<Group>> GetGroup(GroupId id)
     {
-        var group = await groupRepository.Read(id);
+        var group = await groupRepository.Get(id);
         return group is null ? Result<Group>.Failure(GroupError.GroupNotFound) : Result<Group>.Success(group);
     }
 
@@ -74,7 +74,7 @@ public class GroupService(
             return Result<InvitationDto>.Failure(GroupError.UserInvitingItself);
         }
         
-        var groupResult = await ReadGroup(groupId);
+        var groupResult = await GetGroup(groupId);
         if (groupResult.IsFailure)
         {
             logger.Log(LogLevel.Error, $"{groupResult.Error.Description} Search criteria was groupId: {groupId}");
@@ -103,7 +103,7 @@ public class GroupService(
         groupRepository.Update(group);
         await unitOfWork.SaveChangesAsync();
 
-        var invitationDto =  mapper.Map<InvitationDto>(invitationResult.Value);
+        var invitationDto = mapper.Map<InvitationDto>(invitationResult.Value);
         
         return Result<InvitationDto>.Success(invitationDto);
     }
@@ -112,7 +112,7 @@ public class GroupService(
     {
         logger.Log(LogLevel.Information, "Cancel invitation");
 
-        var group = await groupRepository.ReadGroupByInvitationId(id);
+        var group = await groupRepository.GetGroupByInvitationId(id);
         
         if (group is null)
         {
@@ -145,7 +145,7 @@ public class GroupService(
     {
         logger.Log(LogLevel.Information, "Accept invitation");
 
-        var group = await groupRepository.ReadGroupByInvitationId(id);
+        var group = await groupRepository.GetGroupByInvitationId(id);
         if (group is null)
         {
             logger.Log(LogLevel.Error, $"{GroupError.GroupNotFound.Description} Search criteria was invitationId: {id}");
@@ -182,7 +182,7 @@ public class GroupService(
         
         groupRepository.Update(group);
         
-        var tasks = await taskRepository.ReadAllByGroupId(group.Id);
+        var tasks = await taskRepository.GetAllByGroupId(group.Id);
       
         foreach (var task in tasks)
         {
@@ -199,7 +199,7 @@ public class GroupService(
     {
         logger.Log(LogLevel.Information, "Reject invitation");
 
-        var group = await groupRepository.ReadGroupByInvitationId(id);
+        var group = await groupRepository.GetGroupByInvitationId(id);
         
         if (group is null)
         {
@@ -232,7 +232,7 @@ public class GroupService(
     {
         logger.Log(LogLevel.Information, "Delete group");
 
-        var group = await groupRepository.Read(id);
+        var group = await groupRepository.Get(id);
         if (group is null)
         {
             logger.Log(LogLevel.Error, $"{GroupError.GroupNotFound.Description} Search criteria was groupId: {id}");
@@ -264,7 +264,7 @@ public class GroupService(
     {
         logger.Log(LogLevel.Information, "Delete member");
 
-        var group = await groupRepository.Read(groupId);
+        var group = await groupRepository.Get(groupId);
         if (group is null)
         {
             logger.Log(LogLevel.Error, $"{GroupError.GroupNotFound.Description} Search criteria was groupId: {groupId}");
@@ -281,7 +281,7 @@ public class GroupService(
     {
         logger.Log(LogLevel.Information, "Leave group");
 
-        var group = await groupRepository.Read(groupId);
+        var group = await groupRepository.Get(groupId);
         if (group is null)
         {
             logger.Log(LogLevel.Error, $"{GroupError.GroupNotFound.Description} Search criteria was groupId: {groupId}");

@@ -15,7 +15,7 @@ public class InvitationCreatorAuthorizationHandler(IGroupRepository groupReposit
     protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, IsInvitationCreatorRequirement requirement, InvitationId invitationId)
     {
         var userId = new UserId(Guid.Parse( context.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
-        var group = await groupRepository.ReadGroupByInvitationId(invitationId);
+        var group = await groupRepository.GetGroupByInvitationId(invitationId);
         if (group is null)
         {
             context.Fail();

@@ -1,17 +1,15 @@
+using Application.Common.Data;
+using Domain.Group.Models.ValueObjects;
+using Domain.User.Entities;
+using Domain.User.Repositories;
+using Domain.User.ValueObjects;
 using Infrastructure.Common;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.User;
+namespace Infrastructure;
 
-using Application.Common.Data;
-using Domain.Group.Models.ValueObjects;
-using Domain.User.Repositories;
-using Domain.User.ValueObjects;
-using Domain.User.Entities;
-
-public class UserRepository(IApplicationDbContext dbContext, IUnitOfWork unitOfWork) : IUserRepository
+public class UserRepository(IApplicationDbContext dbContext) : IUserRepository
 {
-    private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task Add(User user)
     {

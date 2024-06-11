@@ -19,13 +19,15 @@ public class AutoMapperProfile : Profile
         CreateMap<GroupId, Guid>();
         CreateMap<Group, GroupDto>()
             .ForMember(dto => dto.GroupId,opt => opt.MapFrom(group => group.Id.Value)).ForMember(dto => dto.Creator,opt => opt.MapFrom(group => group.Members.FirstOrDefault(member => member.Role == Role.Admin)));
-        CreateMap<Invitation, InvitationDto>().ForMember(dto => dto.TargetEmail,opt => opt.MapFrom(invitation => invitation.User.Email))
+        CreateMap<Invitation, InvitationDto>()
+            .ForMember(dto => dto.TargetEmail,opt => opt.MapFrom(invitation => invitation.User.Email))
             .ForMember(dto => dto.InvitationId,opt => opt.MapFrom(invitation => invitation.Id.Value));
         CreateMap<Member, MemberDto>()
             .ForMember(dto => dto.MemberId,opt => opt.MapFrom(member => member.Id.Value))
             .ForMember(
                 dto => dto.Name,
                 opt => opt.MapFrom(member => member.User.Name))
+            .ForMember(dto => dto.Email,opt => opt.MapFrom(member => member.User.Email))
             .ForMember(
                 dto => dto.Surname,
                 opt => opt.MapFrom(member => member.User.Surname));

@@ -32,20 +32,7 @@ public static class DependencyInjection
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>(provider => dateTimeProvider);
         services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
         services.AddValidatorsFromAssembly(typeof(Presentation.DependencyInjection).Assembly);
-        services.AddControllers(config =>
-        {
-            var policy = new AuthorizationPolicyBuilder()
-                .RequireAuthenticatedUser()
-                .Build();
-            config.Filters.Add(new AuthorizeFilter(policy));
-
-        }).AddJsonOptions(options =>
-        {
-            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-            options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-        });
-        
-        
+  
         services.AddAuthorizationBuilder()
                     .AddPolicy("GroupAccessPolicy", policy =>
                 policy.Requirements.Add(new IsGroupMemberRequirement()))

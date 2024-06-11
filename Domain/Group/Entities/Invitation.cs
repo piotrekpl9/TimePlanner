@@ -8,11 +8,13 @@ namespace Domain.Group.Entities;
 
 public sealed class Invitation : Entity<InvitationId>
 {
-    internal Invitation(InvitationId id, GroupId groupId, User.Entities.User user, Member creator, InvitationStatus status, DateTime createdAt, DateTime? updatedAt, DateTime? deletedAt) : base(id)
+    //Change groupID to group
+    internal Invitation(InvitationId id, GroupId groupId, User.Entities.User user, Member creator, string groupName, InvitationStatus status, DateTime createdAt, DateTime? updatedAt, DateTime? deletedAt) : base(id)
     {
         User = user;
         Creator = creator;
         GroupId = groupId;
+        GroupName = groupName;
         Status = status;
         CreatedAt = createdAt;
         UpdatedAt = updatedAt;
@@ -28,6 +30,7 @@ public sealed class Invitation : Entity<InvitationId>
     public User.Entities.User User { get; private set; }
     public Member Creator { get; private set; }
     public GroupId GroupId { get; private set; }
+    public string GroupName { get; private set; }
     public InvitationStatus Status { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }

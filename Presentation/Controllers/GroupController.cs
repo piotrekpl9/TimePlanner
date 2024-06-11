@@ -153,10 +153,10 @@ public class GroupController(IGroupService groupService, IGroupRepository groupR
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK,Type = typeof(GroupDto))]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IResult> ReadGroup()
+    public async Task<IResult> GetGroup()
     {
         var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
-        var result = await groupRepository.ReadGroupByUserId(userId);
+        var result = await groupRepository.GetGroupByUserId(userId);
         return result is not null ? Results.Ok(mapper.Map<GroupDto>(result)) : Results.NotFound();
     }
 
@@ -164,7 +164,7 @@ public class GroupController(IGroupService groupService, IGroupRepository groupR
     [HttpGet("{groupGuid:guid}/")]
     [ProducesResponseType(StatusCodes.Status200OK,Type = typeof(GroupDto))]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IResult> ReadGroup(Guid groupGuid)
+    public async Task<IResult> GetGroup(Guid groupGuid)
     {
         var groupId = new GroupId(groupGuid);
         var memberAuthorizationResult = await authorizationService
@@ -174,17 +174,17 @@ public class GroupController(IGroupService groupService, IGroupRepository groupR
         {
             return Results.Forbid();
         }
-        var result = await groupRepository.Read(groupId);
+        var result = await groupRepository.Get(groupId);
         return result is not null ? Results.Ok(mapper.Map<Group, GroupDto>(result)) : Results.NotFound();
     }
     
     [HttpGet("pending-invitations")]
     [ProducesResponseType(StatusCodes.Status200OK,Type = typeof(List<InvitationDto>))]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IResult> ReadUsersPendingInvitations()
+    public async Task<IResult> GetUsersPendingInvitations()
     { 
         var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
-        var result = (await groupRepository.ReadInvitationsByUserId(userId))?.Where(invitation => invitation.Status is InvitationStatus.Pending).ToList();
+        var result = (await groupRepository.GetInvitationsByUserId(userId))?.Where(invitation => invitation.Status is InvitationStatus.Pending).ToList();
         if (result is null)
         {
             return Results.NotFound();
@@ -196,7 +196,7 @@ public class GroupController(IGroupService groupService, IGroupRepository groupR
     [HttpGet("{groupGuid:guid}/invitations")]
     [ProducesResponseType(StatusCodes.Status200OK,Type = typeof(List<InvitationDto>))]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IResult> ReadGroupInvitations(Guid groupGuid)
+    public async Task<IResult> GetGroupInvitations(Guid groupGuid)
     {
         var groupId = new GroupId(groupGuid);
         var memberAuthorizationResult = await authorizationService
@@ -206,7 +206,7 @@ public class GroupController(IGroupService groupService, IGroupRepository groupR
         {
             return Results.Forbid();
         }
-        var result = await groupRepository.Read(groupId);
+        var result = await groupRepository.Get(groupId);
         if (result is null)
         {
             return Results.NotFound();
@@ -218,7 +218,7 @@ public class GroupController(IGroupService groupService, IGroupRepository groupR
     [HttpGet("{groupGuid:guid}/members")]
     [ProducesResponseType(StatusCodes.Status200OK,Type = typeof(List<MemberDto>))]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IResult> ReadGroupMembers(Guid groupGuid)
+    public async Task<IResult> GetGroupMembers(Guid groupGuid)
     { 
         var groupId = new GroupId(groupGuid);
         var memberAuthorizationResult = await authorizationService
@@ -229,7 +229,7 @@ public class GroupController(IGroupService groupService, IGroupRepository groupR
             return Results.Forbid();
         }
         
-        var result = await groupRepository.Read(groupId);
+        var result = await groupRepository.Get(groupId);
         
         if (result is null)
         {

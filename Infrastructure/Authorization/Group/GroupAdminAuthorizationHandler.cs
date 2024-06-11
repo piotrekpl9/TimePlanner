@@ -16,7 +16,7 @@ public class GroupAdminAuthorizationHandler(IGroupRepository groupRepository)
     {
         
         var userId = new UserId(Guid.Parse( context.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
-        var group = await groupRepository.Read(groupId);
+        var group = await groupRepository.Get(groupId);
         if (group is null)
         {
             context.Fail();

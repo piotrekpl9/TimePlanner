@@ -7,11 +7,11 @@ public interface IGroupRepository
 {
     public System.Threading.Tasks.Task Add(Group group);
     
-    public Task<Group?> Read(GroupId groupId);
-    public Task<Group?> ReadGroupByInvitationId(InvitationId invitationId);
-    public Task<Group?> ReadGroupByMemberId(MemberId memberId);
-    public Task<Group?> ReadGroupByUserId(UserId userId);
-    public Task<List<Invitation>?> ReadInvitationsByUserId(UserId userId);
+    public Task<Group?> Get(GroupId groupId);
+    public Task<Group?> GetGroupByInvitationId(InvitationId invitationId);
+    public Task<Group?> GetGroupByMemberId(MemberId memberId);
+    public Task<Group?> GetGroupByUserId(UserId userId);
+    public Task<List<Invitation>?> GetInvitationsByUserId(UserId userId);
     public void Update(Group group);
     public Task<bool> Delete(GroupId groupId);
 }
