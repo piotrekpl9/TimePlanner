@@ -34,7 +34,7 @@ public class GroupRepository(IApplicationDbContext dbContext, IUnitOfWork unitOf
 
     public Task<Group?> GetGroupByUserId(UserId userId)
     {
-        return dbContext.Groups.Include(group => group.Members).ThenInclude(member => member.User).Include(group => group.Invitations).ThenInclude(invitation => invitation.User).Where(group => group.Members.Any(member => member.User.Id.Equals(userId))).SingleOrDefaultAsync();
+        return dbContext.Groups.Include(group => group.Members).ThenInclude(member => member.User).Include(group => group.Invitations).ThenInclude(invitation => invitation.User).Where(group => group.Members.Any(member => member.User.Id.Equals(userId)) && !group.DeletedAt.HasValue).SingleOrDefaultAsync();
     }
 
     public async Task<List<Invitation>?> GetInvitationsByUserId(UserId userId)

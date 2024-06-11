@@ -166,6 +166,15 @@ public class GroupService(
             return Result.Failure(UserError.DoesntExists);
         }
         
+          
+        var exitingGroupCheck = await groupRepository.GetGroupByUserId(invitation.User.Id);
+
+        if (exitingGroupCheck is not null)
+        {
+            logger.Log(LogLevel.Error, $"{GroupError.UserAlreadyInOtherGroup.Description} {invitation.User.Id}");
+            return Result<GroupDto>.Failure(GroupError.UserAlreadyInOtherGroup);
+        }
+        
         var result = group.AcceptInvitation(invitation);
       
         if (result.IsFailure)
