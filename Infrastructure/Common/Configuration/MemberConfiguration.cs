@@ -20,7 +20,7 @@ public class MemberConfiguration : IEntityTypeConfiguration<Member>
             groupId => groupId.Value,
             guid => new GroupId(guid));
         
-        builder.HasOne<Domain.User.Entities.User>(member => member.User).WithOne().HasForeignKey<Member>(m => m.UserId);
+        builder.HasOne<Domain.User.Entities.User>(member => member.User).WithMany().HasForeignKey(m => m.UserId);
             
       
     }

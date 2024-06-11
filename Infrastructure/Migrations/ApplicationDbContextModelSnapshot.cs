@@ -72,8 +72,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("GroupId");
 
-                    b.HasIndex("UserId")
-                        .IsUnique();
+                    b.HasIndex("UserId");
 
                     b.ToTable("Member");
                 });
@@ -251,8 +250,8 @@ namespace Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("Domain.User.Entities.User", "User")
-                        .WithOne()
-                        .HasForeignKey("Domain.Group.Entities.Member", "UserId")
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
