@@ -17,27 +17,27 @@ public class GroupRepository(IApplicationDbContext dbContext, IUnitOfWork unitOf
         await dbContext.Groups.AddAsync(group);
     }
 
-    public async Task<Group?> Read(GroupId groupId)
+    public async Task<Group?> Get(GroupId groupId)
     {
         return await dbContext.Groups.Include(group => group.Members).ThenInclude(member => member.User).Include(group => group.Invitations).ThenInclude(invitation => invitation.User).SingleOrDefaultAsync(group => groupId.Equals(group.Id));
     }
 
-    public async Task<Group?> ReadGroupByInvitationId(InvitationId invitationId)
+    public async Task<Group?> GetGroupByInvitationId(InvitationId invitationId)
     {
         return await dbContext.Groups.Include(group => group.Invitations).ThenInclude(invitation => invitation.User).Include(group => group.Invitations).ThenInclude(invitation => invitation.Creator).Include(group => group.Members).ThenInclude(member => member.User).Where(group => group.Invitations.Any(invitation => invitation.Id.Equals(invitationId))).SingleOrDefaultAsync();
     }
 
-    public Task<Group?> ReadGroupByMemberId(MemberId memberId)
+    public Task<Group?> GetGroupByMemberId(MemberId memberId)
     {
         return dbContext.Groups.Include(group => group.Members).ThenInclude(member => member.User).Where(group => group.Members.Any(member => member.Id.Equals(memberId))).SingleOrDefaultAsync();
     }
 
-    public Task<Group?> ReadGroupByUserId(UserId userId)
+    public Task<Group?> GetGroupByUserId(UserId userId)
     {
         return dbContext.Groups.Include(group => group.Members).ThenInclude(member => member.User).Include(group => group.Invitations).ThenInclude(invitation => invitation.User).Where(group => group.Members.Any(member => member.User.Id.Equals(userId))).SingleOrDefaultAsync();
     }
 
-    public async Task<List<Invitation>?> ReadInvitationsByUserId(UserId userId)
+    public async Task<List<Invitation>?> GetInvitationsByUserId(UserId userId)
     {
         return dbContext.Groups.Include(group => group.Invitations).ThenInclude(invitation => invitation.User).Include(group => group.Invitations).ThenInclude(invitation => invitation.Creator).ThenInclude(invitation => invitation.User).AsNoTracking().SelectMany(group => group.Invitations.Where(invitation => invitation.User.Id.Equals(userId)).ToList()).ToList();
     }
@@ -49,7 +49,7 @@ public class GroupRepository(IApplicationDbContext dbContext, IUnitOfWork unitOf
 
     public async Task<bool> Delete(GroupId groupId)
     {
-        var group = await Read(groupId);
+        var group = await Get(groupId);
         if (group is null)
         {
             return false;

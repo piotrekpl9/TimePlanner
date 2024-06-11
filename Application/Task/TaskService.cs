@@ -29,7 +29,7 @@ public class TaskService(ITaskRepository taskRepository, IGroupRepository groupR
             return Result<TaskDto>.Failure(UserError.DoesntExists);
         }
 
-        var group = await groupRepository.ReadGroupByUserId(userId);
+        var group = await groupRepository.GetGroupByUserId(userId);
         if (group is null)
         {
             logger.Log(LogLevel.Error, $"{GroupError.GroupNotFound.Description} Search criteria was userId: {userId.Value}" );
@@ -70,7 +70,7 @@ public class TaskService(ITaskRepository taskRepository, IGroupRepository groupR
     public async Task<Result<TaskDto>> Update(TaskId id, UpdateTaskDto newTask)
     {
         logger.Log(LogLevel.Information, "Update task");
-        var task = await taskRepository.Read(id);
+        var task = await taskRepository.Get(id);
         if (task is null)
         {        
             logger.Log(LogLevel.Error, $"{TaskError.TaskNotFound.Description} Search criteria was taskId: {id}" );
@@ -89,7 +89,7 @@ public class TaskService(ITaskRepository taskRepository, IGroupRepository groupR
     public async Task<Result> Delete(TaskId id)
     {
         logger.Log(LogLevel.Information, "Delete task");
-        var task = await taskRepository.Read(id);
+        var task = await taskRepository.Get(id);
         if (task is null)
         {
             logger.Log(LogLevel.Error, $"{TaskError.TaskNotFound.Description} Search criteria was taskId: {id}" );

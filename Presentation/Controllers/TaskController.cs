@@ -63,7 +63,7 @@ public class TaskController(ITaskService taskService, ITaskRepository taskReposi
     [HttpGet("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TaskDto))]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IResult> ReadTask(Guid id)
+    public async Task<IResult> GetTask(Guid id)
     {
         var taskId = new TaskId(id);
         var taskAuthorizationResult = await authorizationService
@@ -74,7 +74,7 @@ public class TaskController(ITaskService taskService, ITaskRepository taskReposi
             return Results.Forbid();
         }
         
-        var task = await taskRepository.Read(taskId);
+        var task = await taskRepository.Get(taskId);
         if (task is null)
         {
             return Results.NotFound();
@@ -85,10 +85,10 @@ public class TaskController(ITaskService taskService, ITaskRepository taskReposi
     
     [HttpGet("user/")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TaskDto))]
-    public async Task<IResult> ReadUserTasks()
+    public async Task<IResult> GetUserTasks()
     {   
         var userId = new UserId(Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty));
-        var tasks = await taskRepository.ReadAllByUserId(userId);
+        var tasks = await taskRepository.GetAllByUserId(userId);
         List<TaskDto> taskDtos = tasks.Select(mapper.Map<TaskDto>).ToList();
 
         return Results.Ok(taskDtos);
@@ -97,7 +97,7 @@ public class TaskController(ITaskService taskService, ITaskRepository taskReposi
     [HttpGet("group/{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TaskDto))]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IResult> ReadGroupTasks(Guid id)
+    public async Task<IResult> GetGroupTasks(Guid id)
     {   
         var groupId = new GroupId(id);
         
@@ -108,7 +108,7 @@ public class TaskController(ITaskService taskService, ITaskRepository taskReposi
         {
             return Results.Forbid();
         }
-        var tasks = await taskRepository.ReadAllByGroupId(groupId);
+        var tasks = await taskRepository.GetAllByGroupId(groupId);
         List<TaskDto> taskDtos = tasks.Select(mapper.Map<TaskDto>).ToList();
         return Results.Ok(taskDtos);
     }

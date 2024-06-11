@@ -68,7 +68,7 @@ public sealed class Group : AggregateRoot<GroupId>
             return Result<Invitation>.Failure(GroupError.UserIsNotMember);
         }
         
-        var invitation = new Invitation( new InvitationId(Guid.NewGuid()), Id, user, sender, InvitationStatus.Pending,DateTime.UtcNow, null, null);
+        var invitation = new Invitation( new InvitationId(Guid.NewGuid()), Id, user, sender, Name,InvitationStatus.Pending,DateTime.UtcNow, null, null);
         
         _invitations.Add(invitation);
 

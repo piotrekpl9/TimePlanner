@@ -63,7 +63,7 @@ public class TaskServiceTests
         var groupMemberIds = group.Members.Select(member => member.UserId).ToList();
 
         var groupRepoMock = new Mock<IGroupRepository>();
-        groupRepoMock.Setup(repository => repository.ReadGroupByUserId(firstUser.Id)).ReturnsAsync(group);
+        groupRepoMock.Setup(repository => repository.GetGroupByUserId(firstUser.Id)).ReturnsAsync(group);
         var loggerMock = new Mock<ILogger<TaskService>>();
         var userRepoMock = new Mock<IUserRepository>();
         userRepoMock.Setup(repository => repository.GetById(firstUser.Id)).ReturnsAsync(firstUser);

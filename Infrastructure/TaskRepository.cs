@@ -18,17 +18,17 @@ public class TaskRepository(IApplicationDbContext dbContext, IUnitOfWork unitOfW
         await dbContext.Tasks.AddAsync(task);
     }
 
-    public async Task<Task?> Read(TaskId id)
+    public async Task<Task?> Get(TaskId id)
     {
         return await dbContext.Tasks.Include(task => task.AssignedUsers).Where(task => task.Id.Equals(id)).SingleOrDefaultAsync();
     }
 
-    public async Task<List<Task>> ReadAllByUserId(UserId id)
+    public async Task<List<Task>> GetAllByUserId(UserId id)
     {
         return await dbContext.Tasks.Include(task => task.AssignedUsers).Where(task => task.AssignedUsers.Select(user => user.Id).Contains(id)).ToListAsync();
     }
 
-    public async Task<List<Task>> ReadAllByGroupId(GroupId id)
+    public async Task<List<Task>> GetAllByGroupId(GroupId id)
     {
         return await dbContext.Tasks.Include(task => task.AssignedUsers).Where(task => task.GroupId != null && task.GroupId.Equals(id)).ToListAsync();
     }
@@ -40,7 +40,7 @@ public class TaskRepository(IApplicationDbContext dbContext, IUnitOfWork unitOfW
 
     public async Task<bool> Delete(TaskId id)
     {
-        var task = await Read(id);
+        var task = await Get(id);
         if (task is null)
         {
             return false;

@@ -11,7 +11,6 @@ using Infrastructure.Authorization.Group;
 using Infrastructure.Authorization.Task;
 using Infrastructure.Common;
 using Infrastructure.Services;
-using Infrastructure.User;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 
